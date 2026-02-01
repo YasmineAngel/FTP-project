@@ -1,0 +1,21 @@
+# --- Compiled Java files ---
+*.class
+target/
+
+# --- Eclipse specific files ---
+.metadata/
+.settings/
+.project
+.classpath
+bin/
+
+# --- Maven specific ---
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# --- OS specific ---
+.DS_Store
+Thumbs.db
