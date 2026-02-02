@@ -1,5 +1,46 @@
 package ftp.core;
 
-public class CommandExecutor {
+import ftp.commands.*;
+import ftp.model.UserSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CommandExecutor {
+    private static final Logger logger = LogManager.getLogger(CommandExecutor.class);
+    private final Map<String, FTPCommand> commands = new HashMap<>();
+
+    public CommandExecutor() {
+        // Register the commands you and Member B created
+        commands.put("USER", new UserCommand());
+        commands.put("PASS", new PassCommand());
+        // You can add more commands here as you develop them (QUIT, SYST, etc.)
+    }
+
+    public void execute(String line, UserSession session, PrintWriter out) {
+        if (line == null) {
+            session.disconnect();
+            return;
+        }
+
+        logger.info("Received command: {}", line);
+
+        // Split the line into command name and arguments (e.g., "USER anonymous")
+        String[] parts = line.trim().split("\\s+", 2);
+        String commandName = parts[0].toUpperCase();
+        String args = (parts.length > 1) ? parts[1] : null;
+
+        FTPCommand command = commands.get(commandName);
+
+        if (command != null) {
+            command.execute(args, session, out);
+        } else {
+            logger.warn("Unknown command: {}", commandName);
+            out.print("502 Command not implemented.\r\n");
+            out.flush();
+        }
+    }
 }

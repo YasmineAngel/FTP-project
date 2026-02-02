@@ -1,12 +1,20 @@
 package ftp.core;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.net.Socket;
 
+import ftp.model.UserSession;
+
 public class ClientHandler implements Runnable {
     private final Socket socket;
+    private final String rootPath;
+    private final CommandExecutor commandExecutor; 
+    private static final Logger logger =LogManager.getLogger(ClientHandler.class);
     public ClientHandler(Socket socket, String rootPath) {
         this.socket = socket;
+        this.rootPath = rootPath;
+        this.commandExecutor = new CommandExecutor();
     }
 
     @Override
@@ -19,16 +27,19 @@ public class ClientHandler implements Runnable {
             // We use \r\n as required by FTP RFC standards
             out.print("220 Welcome to our Team FTP Server\r\n");
             out.flush(); // Ensure the message is sent immediately
+            UserSession session = new UserSession();
 
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                System.out.println("Client sent: " + inputLine);
-                // For Milestone 1, we just acknowledge receipt
-                out.print("502 Command not implemented yet\r\n");
-                out.flush();
-            }
+             while (session.isConnected()) {
+                String line = in.readLine();
+                if (line == null) break;
+                logger.info("C -> S: {}", line);
+                commandExecutor.execute(line, session, out);
+             }
+
         } catch (IOException e) {
-            System.err.println("Client disconnected: " + e.getMessage());
+        	logger.error("Client Disconnected",e);
+        }finally {
+            logger.info("Client session ended.");
         }
     }
 }
