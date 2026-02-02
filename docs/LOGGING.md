@@ -4,7 +4,13 @@ This document defines the required logging format for the FTP server.
 All `System.out.println` statements must be replaced with Log4j2 logging
 after branch merge.
 
+## Logging standard
 
+- INFO → client connect/disconnect
+- INFO → incoming FTP commands
+- INFO → outgoing FTP replies
+- ERROR → exceptions
+- No System.out.println
 
 ## Logger Declaration (Required)
 
