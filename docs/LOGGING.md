@@ -36,6 +36,17 @@ logger.info("Client disconnected from {}", socket.getRemoteSocketAddress());
 logger.info("C -> S: {}", commandLine);
 logger.info("S -> C: {}", response);
 
+// I/O error while communicating with client
+logger.error("I/O error while communicating with {}",
+             socket.getRemoteSocketAddress(), exception);
+
+// Invalid or unsupported FTP command
+logger.error("Invalid FTP command received: {}", commandLine);
+
+// Unexpected server-side error
+logger.error("Unexpected server error", exception);
+
+
 // Obvious but some security reminders
 // DON'T LOG passwords
 logger.info("C -> S: PASS ******"); 
