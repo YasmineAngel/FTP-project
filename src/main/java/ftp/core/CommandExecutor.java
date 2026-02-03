@@ -14,10 +14,10 @@ public class CommandExecutor {
     private final Map<String, FTPCommand> commands = new HashMap<>();
 
     public CommandExecutor() {
-        // Register the commands you and Member B created
         commands.put("USER", new UserCommand());
         commands.put("PASS", new PassCommand());
-        // You can add more commands here as you develop them (QUIT, SYST, etc.)
+        commands.put("PWD", new PwdCommand());
+        commands.put("QUIT", new QuitCommand());
     }
 
     public void execute(String line, UserSession session, PrintWriter out) {
