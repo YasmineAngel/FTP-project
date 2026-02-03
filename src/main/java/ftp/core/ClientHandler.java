@@ -14,7 +14,7 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket, String rootPath) {
         this.socket = socket;
         this.rootPath = rootPath;
-        this.commandExecutor = new CommandExecutor();
+        this.commandExecutor = new CommandExecutor(rootPath);
     }
 
     @Override

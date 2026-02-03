@@ -4,7 +4,7 @@ import ftp.commands.*;
 import ftp.model.UserSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import ftp.utils.PathUtils;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,17 +12,19 @@ import java.util.Map;
 public class CommandExecutor {
     private static final Logger logger = LogManager.getLogger(CommandExecutor.class);
     private final Map<String, FTPCommand> commands = new HashMap<>();
+    private final PathUtils pathUtils ;
 
-    public CommandExecutor() {
+    public CommandExecutor(String rootPath) {
+    	this.pathUtils = new PathUtils(rootPath);
         commands.put("USER", new UserCommand());
         commands.put("PASS", new PassCommand());
         commands.put("PWD", new PwdCommand());
         commands.put("SYST", new SystCommand());
         commands.put("TYPE", new TypeCommand());
-        commands.put("LIST", new ListCommand());
+        commands.put("LIST", new ListCommand(pathUtils));
         commands.put("PASV", new PasvCommand());
-        commands.put("RETR", new RetrCommand());
-        commands.put("STOR", new StorCommand());
+        commands.put("RETR", new RetrCommand(pathUtils));
+        commands.put("STOR", new StorCommand(pathUtils));
         
 
     }
