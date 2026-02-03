@@ -17,7 +17,14 @@ public class CommandExecutor {
         commands.put("USER", new UserCommand());
         commands.put("PASS", new PassCommand());
         commands.put("PWD", new PwdCommand());
-        commands.put("QUIT", new QuitCommand());
+        commands.put("SYST", new SystCommand());
+        commands.put("TYPE", new TypeCommand());
+        commands.put("LIST", new ListCommand());
+        commands.put("PASV", new PasvCommand());
+        commands.put("RETR", new RetrCommand());
+        commands.put("STOR", new StorCommand());
+        
+
     }
 
     public void execute(String line, UserSession session, PrintWriter out) {
