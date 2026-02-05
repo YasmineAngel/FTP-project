@@ -1,4 +1,5 @@
 package ftp.model;
+package ftp.data.PassiveServer;
 /**
  * Represents the state of a connected FTP client.
  * This object is created once per connection and shared
@@ -9,6 +10,7 @@ public class UserSession {
     // Authentication state
     private boolean loggedIn = false;
     private String username;
+    private PassiveServer passiveServer;
 
     // Navigation state
     private String currentDirectory = "/";
@@ -22,6 +24,10 @@ public class UserSession {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setPassiveServer(PassiveServer passiveServer) {
+        this.passiveServer = passiveServer;
     }
     
     public boolean hasUsername() {
@@ -49,6 +55,10 @@ public class UserSession {
 
     public String getUsername() {
         return username;
+    }
+
+    public void getPassiveServer() {
+        return passiveServer;
     }
 
     /* =======================
@@ -86,6 +96,10 @@ public class UserSession {
     public void disconnect() {
         this.connected = false;
     }
+
+    public void clearPassiveServer(){
+        passiveServer.close();
+    };
 
     /* =======================
        Helper Enum
