@@ -1,5 +1,5 @@
 package ftp.commands;
-
+import ftp.exceptions.FTPException;
 import ftp.model.UserSession;
 import java.io.PrintWriter;
 
@@ -12,5 +12,5 @@ public interface FTPCommand {
      * @param session Current user session
      * @param out     Control connection writer
      */
-    void execute(String args, UserSession session, PrintWriter out);
+    void execute(String args, UserSession session, PrintWriter out) throws FTPException;
 }
