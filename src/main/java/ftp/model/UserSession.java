@@ -1,5 +1,7 @@
 package ftp.model;
-package ftp.data.PassiveServer;
+import java.io.IOException;
+
+import  ftp.data.PassiveServer;
 /**
  * Represents the state of a connected FTP client.
  * This object is created once per connection and shared
@@ -57,7 +59,7 @@ public class UserSession {
         return username;
     }
 
-    public void getPassiveServer() {
+    public PassiveServer getPassiveServer() {
         return passiveServer;
     }
 
@@ -97,10 +99,13 @@ public class UserSession {
         this.connected = false;
     }
 
-    public void clearPassiveServer(){
-        passiveServer.close();
-    };
-
+    public void clearPassiveServer() throws IOException {
+        if (passiveServer != null) {
+            passiveServer.close();
+            passiveServer = null;
+        }
+    }
+    
     /* =======================
        Helper Enum
        ======================= */
