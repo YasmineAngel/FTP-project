@@ -1,16 +1,17 @@
 package ftp.commands;
 
-import ftp.data.PassiveServer;
-import ftp.data.TransferManager;
-import ftp.model.UserSession;
-import ftp.utils.PathUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Path;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import ftp.data.PassiveServer;
+import ftp.data.TransferManager;
+import ftp.model.UserSession;
+import ftp.utils.PathUtils;
 
 public class StorCommand implements FTPCommand {
     
@@ -78,7 +79,11 @@ public class StorCommand implements FTPCommand {
             logger.error("Error storing file: {}", args, e);
             out.print("426 Connection closed; transfer aborted.\r\n");
             out.flush();
-            session.clearPassiveServer();
+            try {
+                session.clearPassiveServer();
+            } catch (IOException ex) {
+                System.getLogger(StorCommand.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            }
         }
     }
 }

@@ -18,13 +18,15 @@ public class CommandExecutor {
     	this.pathUtils = new PathUtils(rootPath);
         commands.put("USER", new UserCommand());
         commands.put("PASS", new PassCommand());
-        commands.put("PWD", new PwdCommand());
+        commands.put("PWD", new PwdCommand(pathUtils));
         commands.put("SYST", new SystCommand());
         commands.put("TYPE", new TypeCommand());
         commands.put("LIST", new ListCommand(pathUtils));
         commands.put("PASV", new PasvCommand());
         commands.put("RETR", new RetrCommand(pathUtils));
         commands.put("STOR", new StorCommand(pathUtils));
+        commands.put("CWD", new CwdCommand(pathUtils));
+        commands.put("CDUP", new CdupCommand(pathUtils));
         
 
     }
