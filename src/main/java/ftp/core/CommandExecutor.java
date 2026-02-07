@@ -54,7 +54,7 @@ public class CommandExecutor {
 	            out.flush();
 	        }
 	    } catch (FTPException e) {
-	        // This catches ALL our custom exceptions (501, 503, 530, 550, etc.)
+	        // catches ALL our custom exceptions (501, 503, 530, 550, etc.)
 	        logger.error("Protocol Error ({}): {}", e.getStatusCode(), e.getMessage());
 	        
 	        // We send the code and message directly to the client
@@ -62,10 +62,10 @@ public class CommandExecutor {
 	        out.flush();
 	        
 	    } catch (Exception e) {
-	        // This catches unexpected system crashes (NullPointer, etc.)
+	        // catches unexpected system crashes (NullPointer, etc.)
 	        logger.error("Internal Server Error", e);
 	        out.print("451 Local error in processing.\r\n");
 	        out.flush();
 	    }
 	}
-	}
+}
