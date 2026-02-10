@@ -28,6 +28,9 @@ public class CommandExecutor {
         commands.put("STOR", new StorCommand(pathUtils));
         commands.put("CWD", new CwdCommand(pathUtils));
         commands.put("CDUP", new CdupCommand(pathUtils));
+        commands.put("REIN", new ReinCommand());
+        commands.put("ABOR", new AborCommand());
+        commands.put("HELP", new HelpCommand());
         
 
     }
