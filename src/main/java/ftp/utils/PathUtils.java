@@ -21,32 +21,38 @@ public class PathUtils {
      * @return resolved filesystem path, or null if path escapes root directory
      */
     public Path resolve(String currentDir, String userInput) {
-        // Handle empty or null currentDir
+        // 1. Handle empty or null currentDir
         if (currentDir == null || currentDir.isEmpty()) {
             currentDir = "/";
         }
-        
-        // Remove leading '/' and resolve base path
-        String dirPath = currentDir.startsWith("/") ? currentDir.substring(1) : currentDir;
-        Path base = rootDir.resolve(dirPath);
-
-        Path target;
-        if (userInput == null || userInput.isEmpty()) {
-            target = base;
+    
+        Path base;
+        String pathToResolve;
+    
+        // 2. Logic to handle absolute vs relative paths
+        if (userInput != null && userInput.startsWith("/")) {
+            // If userInput is absolute (e.g., "/folder_3"), we start from rootDir
+            base = rootDir;
+            pathToResolve = userInput.substring(1); // Remove the leading "/"
         } else {
-            target = base.resolve(userInput);
+            // If userInput is relative, we start from the current session directory
+            String dirPath = currentDir.startsWith("/") ? currentDir.substring(1) : currentDir;
+            base = rootDir.resolve(dirPath);
+            pathToResolve = (userInput == null) ? "" : userInput;
         }
-
-        Path normalized = target.normalize();
-        
-        // Security check: ensure path is within root directory
-        if (!normalized.startsWith(rootDir)) {
-            return null; // Path traversal attempt detected
+    
+        // 3. Resolve and normalize the path to remove dots like ".."
+        Path target = base.resolve(pathToResolve).normalize();
+    
+        // 4. Security check: ensure path is strictly within the root directory
+        if (!target.startsWith(rootDir)) {
+            return null; // Triggers the 550 Access Denied in your commands
         }
-        
-        return normalized;
+    
+        return target;
     }
-
+    
+    
     /**
      * Converts a filesystem path back to an FTP-visible path.
      */
