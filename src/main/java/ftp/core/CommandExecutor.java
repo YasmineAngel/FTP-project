@@ -31,6 +31,13 @@ public class CommandExecutor {
         commands.put("REIN", new ReinCommand());
         commands.put("ABOR", new AborCommand());
         commands.put("HELP", new HelpCommand());
+        commands.put("MKD", new MkdCommand(pathUtils));
+        commands.put("RMD", new RmdCommand(pathUtils));
+        commands.put("RNFR", new RnfrCommand(pathUtils));
+        commands.put("RNTO", new RntoCommand(pathUtils));
+
+
+
         
 
     }
