@@ -16,26 +16,39 @@ public class ListManager {
     private static final Logger logger = LogManager.getLogger(ListManager.class);
 
     public static void sendDirectoryListing(Path dir, Socket dataSocket) throws IOException {
+
         if (dir == null || !Files.exists(dir) || !Files.isDirectory(dir)) {
-            logger.error("Cannot list directory: path is null, does not exist, or is not a directory");
             throw new IOException("Invalid directory path");
         }
-
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream()))) {
+    
+        try (BufferedWriter writer =
+                 new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream()))) {
+    
             try (Stream<Path> paths = Files.list(dir)) {
                 paths.forEach(path -> {
                     try {
-                        String type = Files.isDirectory(path) ? "d" : "-";
-                        long size = Files.size(path);
+                        boolean isDir = Files.isDirectory(path);
+    
+                        String permissions = isDir
+                                ? "drwxr-xr-x"
+                                : "-rw-r--r--";
+    
+                        long size = isDir ? 0 : Files.size(path);
                         String name = path.getFileName().toString();
-                        writer.write(String.format("%s %10d %s\r\n", type, size, name));
-                    } catch (IOException e) {
-                        logger.error("Error processing file in directory listing: {}", path, e);
-                    }
+    
+                        String line = String.format(
+                                "%s 1 owner group %10d Feb 10 15:30 %s\r\n",
+                                permissions, size, name
+                        );
+    
+                        writer.write(line);
+    
+                    } catch (IOException ignored) {}
                 });
             }
+    
             writer.flush();
-            logger.info("Directory listing sent successfully for: {}", dir);
         }
     }
+    
 }

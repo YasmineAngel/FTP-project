@@ -26,7 +26,7 @@ public class CdupCommand implements FTPCommand {
         String newFtpPath = pathUtils.toFtpPath(parent);
         session.setCurrentDirectory(newFtpPath);
         
-        out.print("200 Directory changed to " + newFtpPath + "\r\n");
+        out.print("250 Directory changed to " + newFtpPath + "\r\n");
         out.flush();
     }
 }

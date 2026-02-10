@@ -13,6 +13,7 @@ public class UserSession {
     private boolean loggedIn = false;
     private String username;
     private PassiveServer passiveServer;
+    private String renameFrom;
 
     // Navigation state
     private String currentDirectory = "/";
@@ -104,6 +105,18 @@ public class UserSession {
             passiveServer.close();
             passiveServer = null;
         }
+    }
+
+    public void setRenameFrom(String path) {
+        this.renameFrom = path;
+    }
+    
+    public String getRenameFrom() {
+        return renameFrom;
+    }
+    
+    public void clearRenameFrom() {
+        this.renameFrom = null;
     }
     
     /* =======================
