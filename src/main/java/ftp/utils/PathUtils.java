@@ -62,7 +62,7 @@ public class PathUtils {
         }
         
         try {
-            Path relative = rootDir.relativize(fsPath);
+        Path relative = rootDir.relativize(fsPath);
             String ftpPath = "/" + relative.toString().replace("\\", "/");
             // Handle root directory case
             return ftpPath.equals("/.") ? "/" : ftpPath;
