@@ -60,7 +60,7 @@ public class ListCommand implements FTPCommand {
                 dataSocket = session.getPassiveServer().getServerSocket().accept();
             } else {
                 // PORT mode: connect to client
-                dataSocket = new Socket(session.getPortModeAddress(), session.getPortModePort());
+                dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
             }
         } catch (IOException e) {
             throw new ConnectionException("Failed to establish data connection: " + e.getMessage());

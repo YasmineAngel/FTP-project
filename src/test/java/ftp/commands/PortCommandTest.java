@@ -46,7 +46,7 @@ public class PortCommandTest {
         // Verify PORT mode is set
         assertTrue(session.hasPortMode(), "PORT mode should be set");
         assertNotNull(session.getPortModeAddress(), "PORT address should be set");
-        assertEquals(200 * 256 + 50, session.getPortModePort(), "PORT should be 51250");
+        assertEquals(200 * 256 + 50, session.getPortMode(), "PORT should be 51250");
     }
 
     @Test
@@ -106,20 +106,20 @@ public class PortCommandTest {
         
         // Test port calculation: p1 * 256 + p2
         portCommand.execute("127,0,0,1,20,50", session, printWriter);
-        assertEquals(20 * 256 + 50, session.getPortModePort(), "Port should be calculated correctly");
+        assertEquals(20 * 256 + 50, session.getPortMode(), "Port should be calculated correctly");
         
         stringWriter.getBuffer().setLength(0);
         session.clearPortMode();
         
         // Test edge cases
         portCommand.execute("0,0,0,0,0,1", session, printWriter);
-        assertEquals(1, session.getPortModePort(), "Port should be 1");
+        assertEquals(1, session.getPortMode(), "Port should be 1");
         
         stringWriter.getBuffer().setLength(0);
         session.clearPortMode();
         
         portCommand.execute("255,255,255,255,255,254", session, printWriter);
-        assertEquals(255 * 256 + 254, session.getPortModePort(), "Port should be 65534");
+        assertEquals(255 * 256 + 254, session.getPortMode(), "Port should be 65534");
     }
 
     @Test
@@ -145,13 +145,13 @@ public class PortCommandTest {
         
         portCommand.execute("192,168,1,100,200,50", session, printWriter);
         InetAddress firstAddress = session.getPortModeAddress();
-        int firstPort = session.getPortModePort();
+        int firstPort = session.getPortMode();
         
         stringWriter.getBuffer().setLength(0);
         
         portCommand.execute("10,0,0,1,100,200", session, printWriter);
         InetAddress secondAddress = session.getPortModeAddress();
-        int secondPort = session.getPortModePort();
+        int secondPort = session.getPortMode();
         
         assertNotEquals(firstAddress, secondAddress, "Should replace with new address");
         assertNotEquals(firstPort, secondPort, "Should replace with new port");
