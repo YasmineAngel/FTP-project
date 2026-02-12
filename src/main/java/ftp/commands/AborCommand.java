@@ -11,9 +11,8 @@ public class AborCommand implements FTPCommand {
 	@Override
 	public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 	    try {
-	    	Socket activeSocket = session.getActiveDataSocket(); // Track the socket
-	        if (activeSocket != null && !activeSocket.isClosed()) {
-	        	activeSocket.close(); // Forcefully kill the transfer
+	        if (session.getPassiveServer() != null) {
+	        	session.clearPassiveServer(); // throws IOException
 	            out.print("426 Connection closed; transfer aborted.\r\n");
 	            out.print("226 Abort successful.\r\n");
 	        } else {
