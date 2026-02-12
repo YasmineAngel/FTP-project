@@ -36,23 +36,6 @@ if (fsPath == null) {
 Path fsPath = pathUtils.resolveAbsolute("/files/doc.txt");
 ```
 
-### Get Current Directory (PWD)
-
-```java
-Path currentFsPath = pathUtils.resolve(session.getCurrentDirectory(), null);
-String ftpPath = pathUtils.toFtpPath(currentFsPath);
-out.print("257 \"" + ftpPath + "\" is current directory.\r\n");
-```
-
-### Change to Parent Directory (CDUP)
-
-```java
-Path currentFsPath = pathUtils.resolve(session.getCurrentDirectory(), null);
-Path parentPath = pathUtils.getParent(currentFsPath);
-session.setCurrentDirectory(pathUtils.toFtpPath(parentPath));
-out.print("250 Directory changed.\r\n");
-```
-
 ## Validation Methods
 
 ```java
