@@ -100,7 +100,7 @@ public class UserSession {
         this.connected = false;
     }
 
-    public void clearPassiveServer() throws IOException {
+    public void clearPassiveServer() throws IOException, ftp.exceptions.ConnectionException {
         if (passiveServer != null) {
             passiveServer.close();
             passiveServer = null;
