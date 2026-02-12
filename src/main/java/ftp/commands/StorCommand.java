@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Path;
 
-import ftp.data.PassiveServer;
 import ftp.data.TransferManager;
 import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
@@ -34,8 +33,11 @@ public class StorCommand implements FTPCommand {
             return;
         }
 
-        PassiveServer passiveServer = session.getPassiveServer();
-        if (passiveServer == null) {
+        // Check if PORT or PASV mode is set
+        boolean isPassiveMode = session.getPassiveServer() != null;
+        boolean isPortMode = session.hasPortMode();
+        
+        if (!isPassiveMode && !isPortMode) {
             out.print("425 Use PORT or PASV first.\r\n");
             out.flush();
             return;
@@ -51,22 +53,33 @@ public class StorCommand implements FTPCommand {
             return;
         }
 
-        // Accept data connection
+        // Get restart marker
+        long restartMarker = session.getRestartMarker();
+        session.clearRestartMarker(); // Clear after use
+
+        // Accept or connect data connection
         String mode = session.getTransferType() == UserSession.TransferType.ASCII 
             ? "ASCII" : "BINARY";
-        out.print("150 Opening " + mode + " mode data connection for " + args + ".\r\n");
+        String restartMsg = restartMarker > 0 ? " (restarting at " + restartMarker + ")" : "";
+        out.print("150 Opening " + mode + " mode data connection for " + args + restartMsg + ".\r\n");
         out.flush();
 
         Socket dataSocket;
         try {
-            dataSocket = passiveServer.getServerSocket().accept();
+            if (isPassiveMode) {
+                // PASV mode: accept connection from client
+                dataSocket = session.getPassiveServer().getServerSocket().accept();
+            } else {
+                // PORT mode: connect to client
+                dataSocket = new Socket(session.getPortModeAddress(), session.getPortModePort());
+            }
         } catch (IOException e) {
-            throw new ConnectionException("Failed to accept data connection: " + e.getMessage());
+            throw new ConnectionException("Failed to establish data connection: " + e.getMessage());
         }
         
         try {
-            // Receive file
-            TransferManager.receiveFile(filePath, dataSocket);
+            // Receive file (with restart marker if specified)
+            TransferManager.receiveFile(filePath, dataSocket, restartMarker);
             
             out.print("226 Transfer complete.\r\n");
             out.flush();
@@ -74,7 +87,11 @@ public class StorCommand implements FTPCommand {
         } finally {
             try {
                 dataSocket.close();
-                session.clearPassiveServer(); // Clean up after transfer
+                if (isPassiveMode) {
+                    session.clearPassiveServer();
+                } else {
+                    session.clearPortMode();
+                }
             } catch (IOException | ConnectionException e) {
                 throw new ConnectionException(e.getMessage());
             }

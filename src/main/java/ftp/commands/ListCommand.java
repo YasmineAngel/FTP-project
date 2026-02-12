@@ -1,15 +1,16 @@
 package ftp.commands;
 
-import ftp.model.UserSession;
-import ftp.utils.PathUtils;
-import ftp.data.ListManager;
-import ftp.exceptions.FTPException;
-import ftp.exceptions.ConnectionException;
-import ftp.exceptions.UnavailableFileException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Path;
+
+import ftp.data.ListManager;
+import ftp.exceptions.ConnectionException;
+import ftp.exceptions.FTPException;
+import ftp.exceptions.UnavailableFileException;
+import ftp.model.UserSession;
+import ftp.utils.PathUtils;
 
 public class ListCommand implements FTPCommand {
     private final PathUtils pathUtils;
@@ -26,8 +27,12 @@ public class ListCommand implements FTPCommand {
             return;
         }
 
-        if (session.getPassiveServer() == null) {
-            out.print("425 Use PASV first.\r\n");
+        // Check if PORT or PASV mode is set
+        boolean isPassiveMode = session.getPassiveServer() != null;
+        boolean isPortMode = session.hasPortMode();
+        
+        if (!isPassiveMode && !isPortMode) {
+            out.print("425 Use PORT or PASV first.\r\n");
             out.flush();
             return;
         }
@@ -47,12 +52,18 @@ public class ListCommand implements FTPCommand {
             return;
         }
 
-        // 3. Accept data connection and use ListManager
+        // 3. Accept or connect data connection and use ListManager
         Socket dataSocket;
         try {
-            dataSocket = session.getPassiveServer().getServerSocket().accept();
+            if (isPassiveMode) {
+                // PASV mode: accept connection from client
+                dataSocket = session.getPassiveServer().getServerSocket().accept();
+            } else {
+                // PORT mode: connect to client
+                dataSocket = new Socket(session.getPortModeAddress(), session.getPortModePort());
+            }
         } catch (IOException e) {
-            throw new ConnectionException("Failed to accept data connection: " + e.getMessage());
+            throw new ConnectionException("Failed to establish data connection: " + e.getMessage());
         }
 
         try {
@@ -74,7 +85,11 @@ public class ListCommand implements FTPCommand {
                 if (!dataSocket.isClosed()) {
                     dataSocket.close();
                 }
-                session.clearPassiveServer();
+                if (isPassiveMode) {
+                    session.clearPassiveServer();
+                } else {
+                    session.clearPortMode();
+                }
             } catch (IOException | ConnectionException e) {
                 throw new ConnectionException(e.getMessage());
             }
