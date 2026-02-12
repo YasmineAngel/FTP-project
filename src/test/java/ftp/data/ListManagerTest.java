@@ -81,10 +81,12 @@ public class ListManagerTest {
             
             assertFalse(receivedLines.isEmpty(), "Should receive directory listing");
             
-            // Verify format: "d" or "-" followed by size and name
+            // Verify Unix-style format: permissions, link count, owner, group, size, date, time, filename
+            // Format: "-rw-r--r-- 1 owner group          9 Feb 10 15:30 file2.txt"
             for (String line : receivedLines) {
-                assertTrue(line.matches("^[d-]\\s+\\d+\\s+.+$"), 
-                    "Line should match format: " + line);
+                // Check that line starts with d or - followed by permissions, then has at least 5 fields
+                assertTrue(line.matches("^[d-][rwx-]{9}\\s+\\d+\\s+\\S+\\s+\\S+\\s+\\d+.*"), 
+                    "Line should match Unix format: " + line);
             }
             
             // Should contain our files and subdirectory
@@ -218,11 +220,12 @@ public class ListManagerTest {
             
             Thread.sleep(100);
             
-            // Check format for each line
+            // Check Unix-style format for each line
+            // Format: "-rw-r--r-- 1 owner group          9 Feb 10 15:30 file2.txt"
             for (String line : receivedLines) {
-                // Format: "d" or "-" followed by spaces, size (10 digits), space, name
-                assertTrue(line.matches("^[d-]\\s+\\d{1,10}\\s+.+$"), 
-                    "Line should match format: " + line);
+                // Verify Unix-style format: permissions (d or - followed by 9 chars), link count, owner, group, size, ...
+                assertTrue(line.matches("^[d-][rwx-]{9}\\s+\\d+\\s+\\S+\\s+\\S+\\s+\\d+.*"), 
+                    "Line should match Unix format: " + line);
                 
                 // Check that directory entries start with 'd'
                 if (line.contains("subdir")) {
@@ -350,7 +353,8 @@ public class ListManagerTest {
             assertNotNull(smallLine, "Should find small.txt in listing");
             assertNotNull(largeLine, "Should find large.txt in listing");
             
-            // Extract sizes (format: "-         1 small.txt" or "-     10000 large.txt")
+            // Extract sizes from Unix format: "-rw-r--r-- 1 owner group          9 Feb 10 15:30 file.txt"
+            // Size is the 5th field (index 4) after splitting by whitespace
             long smallSize = extractSize(smallLine);
             long largeSize = extractSize(largeLine);
             
@@ -362,11 +366,13 @@ public class ListManagerTest {
     }
 
     private long extractSize(String line) {
-        // Line format: "d" or "-" followed by spaces, size, space, name
+        // Unix format: "-rw-r--r-- 1 owner group          9 Feb 10 15:30 file.txt"
+        // Split by whitespace: [0]=permissions, [1]=link_count, [2]=owner, [3]=group, [4]=size, [5+]=date/time/filename
         String[] parts = line.trim().split("\\s+");
-        if (parts.length >= 2) {
+        if (parts.length >= 5) {
             try {
-                return Long.parseLong(parts[1]);
+                // Size is the 5th field (index 4)
+                return Long.parseLong(parts[4]);
             } catch (NumberFormatException e) {
                 return -1;
             }

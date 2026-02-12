@@ -8,22 +8,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ftp.exceptions.ConnectionException;
+import ftp.exceptions.UnavailableFileException;
 
 public class ListManager {
 
-    private static final Logger logger = LogManager.getLogger(ListManager.class);
-
-    public static void sendDirectoryListing(Path dir, Socket dataSocket) throws IOException {
+    /**
+     * Sends a directory listing over the data socket.
+     * Line format: one char (d or -), spaces, size (number), spaces, filename.
+     * @throws UnavailableFileException if dir is null, does not exist, or is not a directory
+     * @throws ConnectionException if the socket is closed or write fails
+     */
+    public static void sendDirectoryListing(Path dir, Socket dataSocket) throws UnavailableFileException, ConnectionException {
 
         if (dir == null || !Files.exists(dir) || !Files.isDirectory(dir)) {
-            throw new IOException("Invalid directory path");
+            throw new UnavailableFileException("Invalid directory path");
         }
-    
+
         try (BufferedWriter writer =
                  new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream()))) {
-    
+
             try (Stream<Path> paths = Files.list(dir)) {
                 paths.forEach(path -> {
                     try {
@@ -42,13 +46,15 @@ public class ListManager {
                         );
     
                         writer.write(line);
-    
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+                        // Skip entry on error; outer catch handles socket/connection errors
+                    }
                 });
             }
-    
+
             writer.flush();
+        } catch (IOException e) {
+            throw new ConnectionException("Data connection error: " + e.getMessage());
         }
     }
-    
 }
