@@ -3,7 +3,7 @@ import ftp.core.FTPServer;
 
 public class Main {
     public static void main(String[] args) {
-        int port = 2126;
+        int port = 2129;
         String rootPath = "./ftp-root"; 
         
         FTPServer server = new FTPServer(port, rootPath);

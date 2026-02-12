@@ -5,22 +5,23 @@ import ftp.exceptions.FTPException;
 import ftp.exceptions.ConnectionException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.Socket;
 
 public class AborCommand implements FTPCommand {
-    @Override
-    public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
-        // If there is an active passive server/transfer, clean it up
-        if (session.getPassiveServer() != null) {
-            try {
-                session.clearPassiveServer(); // Closes the data socket
-            } catch (IOException | ConnectionException e) {
-                throw new ConnectionException(e.getMessage());
-            }
-            out.print("426 Connection closed; transfer aborted.\r\n");
-            out.print("226 Abort successful.\r\n");
-        } else {
-            out.print("226 Abort ignored (no active transfer).\r\n");
-        }
-        out.flush();
-    }
-}
+	@Override
+	public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
+	    try {
+	    	Socket activeSocket = session.getActiveDataSocket(); // Track the socket
+	        if (activeSocket != null && !activeSocket.isClosed()) {
+	        	activeSocket.close(); // Forcefully kill the transfer
+	            out.print("426 Connection closed; transfer aborted.\r\n");
+	            out.print("226 Abort successful.\r\n");
+	        } else {
+	            out.print("226 Abort ignored (no active transfer).\r\n");
+	        }
+	        out.flush();
+	    } catch (java.io.IOException e) {
+	        // Wrapping the IO error into protocol-level exception
+	    	throw new ftp.exceptions.TransferException("Failed to close data connection: " + e.getMessage());	    }
+	}
+	}
