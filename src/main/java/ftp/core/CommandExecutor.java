@@ -35,6 +35,11 @@ public class CommandExecutor {
         commands.put("RMD", new RmdCommand(pathUtils));
         commands.put("RNFR", new RnfrCommand(pathUtils));
         commands.put("RNTO", new RntoCommand(pathUtils));
+        commands.put("PORT", new PortCommand());
+        commands.put("REST", new RestCommand());
+        commands.put("DELE", new DeleCommand(pathUtils));
+
+        
 
 
 
