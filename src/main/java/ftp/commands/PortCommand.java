@@ -76,7 +76,7 @@ public class PortCommand implements FTPCommand {
             }
 
             // Store PORT mode information in session
-            session.setPortMode(clientAddress, port);
+            session.setPortMode(port, clientAddress);
 
             out.print("200 PORT command successful.\r\n");
             out.flush();
