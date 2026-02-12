@@ -5,17 +5,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Path;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import ftp.data.PassiveServer;
 import ftp.data.TransferManager;
+import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
 
 public class StorCommand implements FTPCommand {
     
-    private static final Logger logger = LogManager.getLogger(StorCommand.class);
     private final PathUtils pathUtils;
     
 
@@ -24,7 +21,7 @@ public class StorCommand implements FTPCommand {
     }
 
     @Override
-    public void execute(String args, UserSession session, PrintWriter out) {
+    public void execute(String args, UserSession session, PrintWriter out) throws ftp.exceptions.FTPException {
         if (!session.isLoggedIn()) {
             out.print("530 Not logged in.\r\n");
             out.flush();
@@ -44,45 +41,42 @@ public class StorCommand implements FTPCommand {
             return;
         }
 
-        try {
-            // Resolve file path
-            Path filePath = pathUtils.resolve(session.getCurrentDirectory(), args);
+        // Resolve file path
+        Path filePath = pathUtils.resolve(session.getCurrentDirectory(), args);
 
-            // Validate path is within root (security)
-            if (filePath == null || !pathUtils.isWithinRoot(filePath)) {
-                out.print("550 Invalid path.\r\n");
-                out.flush();
-                return;
-            }
-
-            // Accept data connection
-            String mode = session.getTransferType() == UserSession.TransferType.ASCII 
-                ? "ASCII" : "BINARY";
-            out.print("150 Opening " + mode + " mode data connection for " + args + ".\r\n");
+        // Validate path is within root (security)
+        if (filePath == null || !pathUtils.isWithinRoot(filePath)) {
+            out.print("550 Invalid path.\r\n");
             out.flush();
+            return;
+        }
 
-            Socket dataSocket = passiveServer.getServerSocket().accept();
+        // Accept data connection
+        String mode = session.getTransferType() == UserSession.TransferType.ASCII 
+            ? "ASCII" : "BINARY";
+        out.print("150 Opening " + mode + " mode data connection for " + args + ".\r\n");
+        out.flush();
+
+        Socket dataSocket;
+        try {
+            dataSocket = passiveServer.getServerSocket().accept();
+        } catch (IOException e) {
+            throw new ConnectionException("Failed to accept data connection: " + e.getMessage());
+        }
+        
+        try {
+            // Receive file
+            TransferManager.receiveFile(filePath, dataSocket);
             
+            out.print("226 Transfer complete.\r\n");
+            out.flush();
+            
+        } finally {
             try {
-                // Receive file
-                TransferManager.receiveFile(filePath, dataSocket);
-                
-                out.print("226 Transfer complete.\r\n");
-                out.flush();
-                
-            } finally {
                 dataSocket.close();
                 session.clearPassiveServer(); // Clean up after transfer
-            }
-
-        } catch (IOException e) {
-            logger.error("Error storing file: {}", args, e);
-            out.print("426 Connection closed; transfer aborted.\r\n");
-            out.flush();
-            try {
-                session.clearPassiveServer();
-            } catch (IOException ex) {
-                System.getLogger(StorCommand.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            } catch (IOException | ConnectionException e) {
+                throw new ConnectionException(e.getMessage());
             }
         }
     }
