@@ -1,8 +1,11 @@
 package ftp.commands;
 
-import static org.mockito.Mockito.*;
-import org.junit.jupiter.api.Test;
 import java.io.PrintWriter;
+
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import ftp.model.UserSession;
 
 public class ReinCommandTest {
