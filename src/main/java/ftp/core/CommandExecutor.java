@@ -14,6 +14,7 @@ import ftp.commands.FTPCommand;
 import ftp.commands.HelpCommand;
 import ftp.commands.ListCommand;
 import ftp.commands.MkdCommand;
+import ftp.commands.NoopCommand;
 import ftp.commands.PassCommand;
 import ftp.commands.PasvCommand;
 import ftp.commands.PwdCommand;
@@ -54,6 +55,7 @@ public class CommandExecutor {
         commands.put("REIN", new ReinCommand());
         commands.put("ABOR", new AborCommand());
         commands.put("HELP", new HelpCommand());
+        commands.put("NOOP", new NoopCommand());
         commands.put("MKD", new MkdCommand(pathUtils));
         commands.put("RMD", new RmdCommand(pathUtils));
         commands.put("RNFR", new RnfrCommand(pathUtils));
