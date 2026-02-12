@@ -55,10 +55,6 @@ public class UserSession {
     public boolean hasPortMode() {
         return this.portModeAddress != null && portModePort > 0;
     }
-    
-    /* =======================
-       Authentication
-       ======================= */
 
     public boolean isLoggedIn() {
         return loggedIn;
@@ -96,10 +92,6 @@ public class UserSession {
         return restartMarker;
     }
 
-    /* =======================
-       Directory Handling
-       ======================= */
-
     public String getCurrentDirectory() {
         return currentDirectory;
     }
@@ -108,10 +100,6 @@ public class UserSession {
         this.currentDirectory = currentDirectory;
     }
 
-    /* =======================
-       Transfer Mode
-       ======================= */
-
     public TransferType getTransferType() {
         return transferType;
     }
@@ -119,10 +107,6 @@ public class UserSession {
     public void setTransferType(TransferType transferType) {
         this.transferType = transferType;
     }
-
-    /* =======================
-       Connection State
-       ======================= */
 
     public boolean isConnected() {
         return connected;
@@ -159,9 +143,6 @@ public class UserSession {
     public void clearRestartMarker() {
         this.restartMarker = 0;
     }
-    /* =======================
-       Helper Enum
-       ======================= */
 
     public enum TransferType {
         ASCII,

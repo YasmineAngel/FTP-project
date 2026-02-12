@@ -1,22 +1,34 @@
 package ftp.commands;
 
+import ftp.exceptions.FTPException;
+import ftp.exceptions.SequenceException;
+import ftp.exceptions.SyntaxException;
 import ftp.model.UserSession;
+
 import java.io.PrintWriter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PassCommand implements FTPCommand {
 
+    private static final Logger logger = LogManager.getLogger(PassCommand.class);
+
     @Override
-    public void execute(String args, UserSession session, PrintWriter out) {
+    public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
+
+        logger.info("C -> S: PASS ******");
 
         if (session.getUsername() == null) {
-            out.println("503 Bad sequence of commands.");
-            return;
+            logger.info("S -> C: 503 Bad sequence of commands.");
+            throw new SequenceException("Bad sequence of commands.");
         }
 
-        // For now: accept any password
         session.login(session.getUsername());
 
-        out.println("230 User logged in, proceed.");
+        String response = "230 User logged in, proceed.";
+        out.println(response);
+
+        logger.info("S -> C: {}", response);
     }
 }
-

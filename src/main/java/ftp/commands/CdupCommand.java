@@ -1,11 +1,20 @@
 package ftp.commands;
 
+import ftp.exceptions.AuthException;
+import ftp.exceptions.FTPException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
+
 import java.io.PrintWriter;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class CdupCommand implements FTPCommand {
+
+    private static final Logger logger = LogManager.getLogger(CdupCommand.class);
+
     private final PathUtils pathUtils;
 
     public CdupCommand(PathUtils pathUtils) {
@@ -13,11 +22,13 @@ public class CdupCommand implements FTPCommand {
     }
 
     @Override
-    public void execute(String args, UserSession session, PrintWriter out) {
+    public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
+
+        logger.info("C -> S: CDUP");
+
         if (!session.isLoggedIn()) {
-            out.print("530 Not logged in.\r\n");
-            out.flush();
-            return;
+            logger.info("S -> C: 530 Not logged in.");
+            throw new AuthException("Not logged in.");
         }
 
         Path currentFsPath = pathUtils.resolve(session.getCurrentDirectory(), null);
@@ -25,8 +36,9 @@ public class CdupCommand implements FTPCommand {
 
         String newFtpPath = pathUtils.toFtpPath(parent);
         session.setCurrentDirectory(newFtpPath);
-        
-        out.print("250 Directory changed to " + newFtpPath + "\r\n");
-        out.flush();
+
+        String response = "250 Directory changed to " + newFtpPath;
+        out.println(response);
+        logger.info("S -> C: {}", response);
     }
 }
