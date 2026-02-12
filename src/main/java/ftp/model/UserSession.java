@@ -1,5 +1,6 @@
 package ftp.model;
 import java.io.IOException;
+import java.net.InetAddress;
 
 import  ftp.data.PassiveServer;
 /**
@@ -15,6 +16,11 @@ public class UserSession {
     private PassiveServer passiveServer;
     private String renameFrom;
 
+    private InetAddress portModeAddress;
+    private int portModePort;
+
+    private long restartMarker = 0;
+
     // Navigation state
     private String currentDirectory = "/";
 
@@ -29,12 +35,25 @@ public class UserSession {
         this.username = username;
     }
 
+    public void setPortMode(int portModePort, InetAddress portModePortAddress) {
+        this.portModePort = portModePort;
+        this.portModeAddress = portModePortAddress;
+    }
+
+    public void setRestartMarker(long restartMarker) {
+        this.restartMarker = restartMarker;
+    }
+
     public void setPassiveServer(PassiveServer passiveServer) {
         this.passiveServer = passiveServer;
     }
     
     public boolean hasUsername() {
         return this.username != null;
+    }
+
+    public boolean hasPortMode() {
+        return this.portModeAddress != null && portModePort > 0;
     }
     
     /* =======================
@@ -60,8 +79,21 @@ public class UserSession {
         return username;
     }
 
+    public int getPortMode() {
+        return portModePort;
+    }
+
+    public InetAddress getPortModeAddress() {
+        return portModeAddress;
+    }
+
+
     public PassiveServer getPassiveServer() {
         return passiveServer;
+    }
+
+    public long getRestartMarker() {
+        return restartMarker;
     }
 
     /* =======================
@@ -118,7 +150,15 @@ public class UserSession {
     public void clearRenameFrom() {
         this.renameFrom = null;
     }
+
+    public void clearPortMode() {
+        this.portModeAddress = null;
+        this.portModePort = 0;
+    }
     
+    public void clearRestartMarker() {
+        this.restartMarker = 0;
+    }
     /* =======================
        Helper Enum
        ======================= */
