@@ -2,7 +2,7 @@ package ftp.model;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import  ftp.data.PassiveServer;
+import ftp.data.PassiveServer;
 /**
  * Represents the state of a connected FTP client.
  * This object is created once per connection and shared

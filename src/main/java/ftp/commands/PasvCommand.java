@@ -22,12 +22,13 @@ public class PasvCommand implements FTPCommand {
             return;
         }
 
-        // Close any existing passive server
+        // Close any existing passive server and clear PORT mode (PASV replaces PORT)
         try {
             session.clearPassiveServer();
         } catch (java.io.IOException | ConnectionException e) {
             throw new ConnectionException(e.getMessage());
         }
+        session.clearPortMode();
 
         // Create and open new passive server
         PassiveServer passiveServer = new PassiveServer();
