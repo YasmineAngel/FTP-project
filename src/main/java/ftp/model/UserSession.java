@@ -1,6 +1,7 @@
 package ftp.model;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 
 import ftp.data.PassiveServer;
 /**
@@ -9,11 +10,11 @@ import ftp.data.PassiveServer;
  * across command executions.
  */
 public class UserSession {
-
+	private static final java.util.Map<String, UserSession> activeSessions = new java.util.concurrent.ConcurrentHashMap<>();
     // Authentication state
     private boolean loggedIn = false;
     private String username;
-    private PassiveServer passiveServer;
+    private volatile PassiveServer passiveServer;
     private String renameFrom;
 
     private InetAddress portModeAddress;
@@ -29,6 +30,16 @@ public class UserSession {
 
     // Connection state
     private boolean connected = true;
+    
+    private volatile Socket activeDataSocket;
+
+    public synchronized void setActiveDataSocket(Socket socket) {
+        this.activeDataSocket = socket;
+    }
+
+    public synchronized Socket getActiveDataSocket() {
+        return this.activeDataSocket;
+    }
 
 
     public void setUsername(String username) {
@@ -59,13 +70,21 @@ public class UserSession {
     public boolean isLoggedIn() {
         return loggedIn;
     }
+    
+    public static UserSession getSessionForUser(String username) {
+        return activeSessions.get(username);
+    }
 
     public void login(String username) {
         this.username = username;
         this.loggedIn = true;
+        activeSessions.put(username, this);
     }
 
     public void logout() {
+    	if (this.username != null) {
+            activeSessions.remove(this.username);
+        }
         this.loggedIn = false;
         this.username = null;
         this.currentDirectory = "/";

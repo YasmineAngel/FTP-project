@@ -21,6 +21,8 @@ public class StorCommand implements FTPCommand {
 
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws ftp.exceptions.FTPException {
+    	System.out.println("Session Object ID: " + System.identityHashCode(session));
+
         if (!session.isLoggedIn()) {
             out.print("530 Not logged in.\r\n");
             out.flush();
@@ -64,7 +66,7 @@ public class StorCommand implements FTPCommand {
         out.print("150 Opening " + mode + " mode data connection for " + args + restartMsg + ".\r\n");
         out.flush();
 
-        Socket dataSocket;
+        Socket dataSocket = null;
         try {
             if (isPassiveMode) {
                 // PASV mode: accept connection from client
@@ -73,20 +75,24 @@ public class StorCommand implements FTPCommand {
                 // PORT mode: connect to client
                 dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
             }
-        } catch (IOException e) {
-            throw new ConnectionException("Failed to establish data connection: " + e.getMessage());
-        }
-        
-        try {
-            // Receive file (with restart marker if specified)
+            session.setActiveDataSocket(dataSocket);
+
             TransferManager.receiveFile(filePath, dataSocket, restartMarker);
             
             out.print("226 Transfer complete.\r\n");
             out.flush();
             
+        } catch (IOException e) {
+        	out.print("426 Connection closed; transfer aborted.\r\n");
+            out.flush();
+            throw new ConnectionException("Transfer interrupted: " + e.getMessage());
+            
         } finally {
             try {
-                dataSocket.close();
+            	if (dataSocket != null) {
+                    dataSocket.close();
+                }
+            	session.setActiveDataSocket(null);
                 if (isPassiveMode) {
                     session.clearPassiveServer();
                 } else {
