@@ -73,9 +73,6 @@ public class ListCommand implements FTPCommand {
                 throw new ConnectionException("Failed to close data connection: " + ignored.getMessage());
             }
             try {
-                if (!dataSocket.isClosed()) {
-                    dataSocket.close();
-                }
                 if (isPassiveMode) {
                     session.clearPassiveServer();
                 } else {
