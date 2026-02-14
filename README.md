@@ -147,19 +147,19 @@ HELP, NOOP, SYST, APPE
 
 ## Code Samples
 The main FTP server logic
-![FTP Server](docs/code_snippets/FTP%20Server.png)
+![FTP Server](docs/code_snippets/Server.png)
 
 Command Interface - the base of all commands
-![Command Interface](docs/code_snippets/Command%20Interface.png)
+![Command Interface](docs/code_snippets/Command.png)
 
 File lock management package design
-![File Lock Manager](docs/code_snippets/File%20Lock%20Manager.png)
+![File Lock Manager](docs/code_snippets/File%20Lock.png)
 
 Command line options configurations
-![Pico Cli Plugin](docs/code_snippets/picocli.png)
+![Pico Cli Plugin](docs/code_snippets/CommandLine%20picocli.png)
 
 Path related functionalities common utility design
-![Path Related Functionalites](docs/code_snippets/Path%20Related%20Functionalites.png)
+![Path Related Functionalites](docs/code_snippets/Path.png)
 
 ## Test coverage
 ![Test_coverage_report](docs/Test%20Coverage.png)
