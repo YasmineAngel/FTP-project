@@ -69,10 +69,8 @@ public class StorCommand implements FTPCommand {
         Socket dataSocket = null;
         try {
             if (isPassiveMode) {
-                // PASV mode: accept connection from client
                 dataSocket = session.getPassiveServer().getServerSocket().accept();
             } else {
-                // PORT mode: connect to client
                 dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
             }
             session.setActiveDataSocket(dataSocket);

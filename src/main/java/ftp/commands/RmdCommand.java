@@ -54,7 +54,7 @@ public class RmdCommand implements FTPCommand {
 
         try {
 
-            Files.delete(target); // fails if not empty
+            Files.delete(target); 
 
             String response = "250 Directory removed successfully.";
             out.println(response);

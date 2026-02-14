@@ -84,7 +84,7 @@ public class CommandExecutor {
 	
 	        logger.info("Received command: {}", line);
 	
-	        // Split the line into command name and arguments (e.g., "USER anonymous")
+	       
 	        String[] parts = line.trim().split("\\s+", 2);
 	        String commandName = parts[0].toUpperCase();
 	        String args = (parts.length > 1) ? parts[1] : null;
@@ -99,15 +99,13 @@ public class CommandExecutor {
 	            out.flush();
 	        }
 	    } catch (FTPException e) {
-	        // catches ALL our custom exceptions (501, 503, 530, 550, etc.)
 	        logger.error("Protocol Error ({}): {}", e.getStatusCode(), e.getMessage());
 	        
-	        // We send the code and message directly to the client
 	        out.print(e.getStatusCode() + " " + e.getMessage() + "\r\n");
 	        out.flush();
 	        
 	    } catch (Exception e) {
-	        // catches unexpected system crashes (NullPointer, etc.)
+	       
 	        logger.error("Internal Server Error", e);
 	        out.print("451 Local error in processing.\r\n");
 	        out.flush();

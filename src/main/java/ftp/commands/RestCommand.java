@@ -20,7 +20,7 @@ public class RestCommand implements FTPCommand {
         }
 
         if (args == null || args.trim().isEmpty()) {
-            // REST 0 clears the restart marker
+           
             session.setRestartMarker(0);
             out.print("350 Restart position accepted (0).\r\n");
             out.flush();

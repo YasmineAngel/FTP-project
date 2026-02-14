@@ -41,7 +41,7 @@ public class ListCommand implements FTPCommand {
 
         Path dirToList = pathUtils.resolve(session.getCurrentDirectory(), args);
 
-        if (dirToList == null || !pathUtils.exists(dirToList) || !pathUtils.isDirectory(dirToList)) {
+        if (!pathUtils.isExistingDirectory(dirToList)) {
             out.print("550 Directory not found.\r\n");
             out.flush();
             return;
@@ -59,7 +59,7 @@ public class ListCommand implements FTPCommand {
         }
 
         try {
-            ListManager.sendDirectoryListing(dirToList, dataSocket);
+            ListManager.sendDirectoryListing(dirToList, dataSocket, pathUtils);
             out.print("226 Transfer complete.\r\n");
             out.flush();
         } catch (UnavailableFileException | ConnectionException e) {

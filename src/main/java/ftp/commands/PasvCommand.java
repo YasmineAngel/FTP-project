@@ -22,7 +22,7 @@ public class PasvCommand implements FTPCommand {
             return;
         }
 
-        // Close any existing passive server and clear PORT mode (PASV replaces PORT)
+       
         try {
             session.clearPassiveServer();
         } catch (java.io.IOException | ConnectionException e) {
@@ -30,12 +30,12 @@ public class PasvCommand implements FTPCommand {
         }
         session.clearPortMode();
 
-        // Create and open new passive server
+        
         PassiveServer passiveServer = new PassiveServer();
         int port = passiveServer.openRandomPort();
         session.setPassiveServer(passiveServer);
 
-        // Get server IP address
+       
         InetAddress localAddress;
         try {
             localAddress = InetAddress.getLocalHost();
@@ -44,8 +44,7 @@ public class PasvCommand implements FTPCommand {
         }
         byte[] address = localAddress.getAddress();
         
-        // Format: 227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)
-        // Port is split into two bytes: p1 = port / 256, p2 = port % 256
+        
         int p1 = port / 256;
         int p2 = port % 256;
         
@@ -55,6 +54,6 @@ public class PasvCommand implements FTPCommand {
         
         out.print(response);
         out.flush();
-        logger.info("PASV mode activated on port: {}", port);
+        logger.debug("PASV mode activated on port: {}", port);
     }
 }

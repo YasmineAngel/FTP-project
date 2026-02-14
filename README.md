@@ -41,7 +41,7 @@ By default the server:
 
 You can configure runtime options using:
 ```shell
-java -jar target/ftp-server-1.0.0.jar --port 2121 --debug
+java -jar target/ftp-server-1.0.0.jar [--port <2121>]  [--log-level <INFO | DEBUG | Warning>]
 ```
 
 ## Project setup

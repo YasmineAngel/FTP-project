@@ -107,6 +107,17 @@ public class PathUtils {
     }
 
     /**
+     * Checks if a path is a non-null, existing directory.
+     * Use this for LIST/NLST and other operations that require a valid directory.
+     *
+     * @param path the path to check
+     * @return true if path exists and is a directory, false otherwise
+     */
+    public boolean isExistingDirectory(Path path) {
+        return path != null && exists(path) && isDirectory(path);
+    }
+
+    /**
      * Checks if a path is a regular file.
      *
      * @param path the path to check
