@@ -13,6 +13,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import ftp.exceptions.ConnectionException;
@@ -22,7 +23,7 @@ import ftp.utils.PathUtils;
 public class ListManager {
 
     private static final DateTimeFormatter LIST_DATE =
-            DateTimeFormatter.ofPattern("MMM dd HH:mm").withZone(ZoneId.systemDefault());
+            DateTimeFormatter.ofPattern("MMM dd HH:mm").withLocale(Locale.US).withZone(java.time.ZoneId.systemDefault());
 
     private static final String FALLBACK_OWNER = "owner";
     private static final String FALLBACK_GROUP = "group";
