@@ -1,14 +1,15 @@
 package ftp.commands;
 
-import ftp.exceptions.FTPException;
-import ftp.exceptions.SequenceException;
-import ftp.exceptions.SyntaxException;
-import ftp.model.UserSession;
-
 import java.io.PrintWriter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import ftp.exceptions.FTPException;
+import ftp.exceptions.SequenceException;
+import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 
 public class PassCommand implements FTPCommand {
 
@@ -26,9 +27,14 @@ public class PassCommand implements FTPCommand {
 
         session.login(session.getUsername());
 
-        String response = "230 User logged in, proceed.";
-        out.println(response);
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.COMMAND_OK,
+            "User logged in, proceed."
+        );
 
-        logger.debug("S -> C: {}", response);
+        out.print(response.serialize());
+        out.flush();
+
+        logger.debug("S -> C: {}", response.serialize().trim());
     }
 }

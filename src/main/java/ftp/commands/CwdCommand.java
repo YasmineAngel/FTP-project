@@ -8,9 +8,11 @@ import org.apache.logging.log4j.Logger;
 
 import ftp.exceptions.AuthException;
 import ftp.exceptions.FTPException;
-import ftp.exceptions.SyntaxException;
 import ftp.exceptions.FileSystemException;
+import ftp.exceptions.SyntaxException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class CwdCommand implements FTPCommand {
@@ -47,19 +49,24 @@ public class CwdCommand implements FTPCommand {
 
         if (resolved == null) {
             logger.error("S -> C: 550 Access denied.");
-            throw new FileSystemException("Access denied.", 550);
+            throw new FileSystemException("Access denied.");
         }
 
         if (!pathUtils.exists(resolved) || !pathUtils.isDirectory(resolved)) {
             logger.error("S -> C: 550 Not a directory.");
-            throw new FileSystemException("Not a directory.", 550);
+            throw new FileSystemException("Not a directory.");
         }
 
         String virtualPath = pathUtils.toFtpPath(resolved);
         session.setCurrentDirectory(virtualPath);
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.FILE_ACTION_OK, 
+            "Directory successfully changed to " + virtualPath
+        );
 
-        String response = "250 Directory successfully changed to " + virtualPath;
-        out.println(response);
-        logger.debug("S -> C: {}", response);
+        out.print(response.serialize());
+        out.flush();
+
+        logger.debug("S -> C: {}", response.serialize().trim());
     }
 }

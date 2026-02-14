@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import ftp.exceptions.FTPException;
 import ftp.exceptions.SyntaxException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 
 public class UserCommand implements FTPCommand {
 
@@ -23,9 +25,15 @@ public class UserCommand implements FTPCommand {
         }
 
         session.logout();
-        session.setUsername(args); 
+        session.setUsername(args);
 
-        out.println("331 Username ok, need password.");
-        logger.debug("S -> C: 331 Username ok, need password.");
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.USERNAME_OK,
+            "Username ok, need password."
+        );
+        out.print(response.serialize());
+        out.flush();
+
+        logger.debug("S -> C: {}", response.serialize().trim());
     }
 }

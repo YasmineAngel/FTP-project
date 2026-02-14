@@ -1,12 +1,5 @@
 package ftp.commands;
 
-import ftp.exceptions.AuthException;
-import ftp.exceptions.FTPException;
-import ftp.exceptions.SyntaxException;
-import ftp.exceptions.FileSystemException;
-import ftp.model.UserSession;
-import ftp.utils.PathUtils;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -14,6 +7,15 @@ import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import ftp.exceptions.AuthException;
+import ftp.exceptions.FTPException;
+import ftp.exceptions.FileSystemException;
+import ftp.exceptions.SyntaxException;
+import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+import ftp.utils.PathUtils;
 
 public class MkdCommand implements FTPCommand {
 
@@ -44,29 +46,33 @@ public class MkdCommand implements FTPCommand {
 
         if (target == null) {
             logger.error("S -> C: 550 Access denied.");
-            throw new FileSystemException("Access denied.", 550);
+            throw new FileSystemException("Access denied.");
         }
 
         try {
 
             if (Files.exists(target)) {
                 logger.error("S -> C: 550 Directory already exists.");
-                throw new FileSystemException("Directory already exists.", 550);
+                throw new FileSystemException("Directory already exists.");
             }
 
             Files.createDirectories(target);
 
             String ftpPath = pathUtils.toFtpPath(target);
-            String response = "257 \"" + ftpPath + "\" directory created.";
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.PATHNAME_CREATED,
+                "\"" + ftpPath + "\" directory created."
+            );
 
-            out.println(response);
-            logger.debug("S -> C: {}", response);
+            out.print(response.serialize());
+            out.flush();
+            logger.debug("S -> C: {}", response.serialize().trim());
 
         } catch (IOException e) {
 
             logger.error("Failed to create directory {}: {}", target, e.getMessage());
 
-            throw new FileSystemException("Create directory operation failed.", 550);
+            throw new FileSystemException("Create directory operation failed.");
         }
     }
 }

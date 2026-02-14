@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import ftp.exceptions.FTPException;
 import ftp.exceptions.SequenceException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponseCode;
 
 class PassCommandTest {
 
@@ -31,7 +32,6 @@ class PassCommandTest {
 
     @Test
     void shouldThrowSequenceException_whenUsernameNotSet() {
-        
         SequenceException ex = assertThrows(SequenceException.class, () ->
                 command.execute("anyPassword", session, out)
         );
@@ -49,6 +49,7 @@ class PassCommandTest {
 
         out.flush();
         String response = stringWriter.toString();
-        assertTrue(response.contains("230 User logged in, proceed."));
+
+        assertTrue(response.contains(FtpResponseCode.COMMAND_OK.getCode() + " User logged in, proceed."));
     }
 }

@@ -11,6 +11,7 @@ import ftp.commands.AborCommand;
 import ftp.commands.AppeCommand;
 import ftp.commands.CdupCommand;
 import ftp.commands.CwdCommand;
+import ftp.commands.DeleCommand;
 import ftp.commands.FTPCommand;
 import ftp.commands.HelpCommand;
 import ftp.commands.ListCommand;
@@ -18,21 +19,22 @@ import ftp.commands.MkdCommand;
 import ftp.commands.NoopCommand;
 import ftp.commands.PassCommand;
 import ftp.commands.PasvCommand;
+import ftp.commands.PortCommand;
 import ftp.commands.PwdCommand;
 import ftp.commands.ReinCommand;
+import ftp.commands.RestCommand;
 import ftp.commands.RetrCommand;
 import ftp.commands.RmdCommand;
 import ftp.commands.RnfrCommand;
 import ftp.commands.RntoCommand;
 import ftp.commands.StorCommand;
-import ftp.commands.PortCommand;
-import ftp.commands.RestCommand;
-import ftp.commands.DeleCommand;
 import ftp.commands.SystCommand;
 import ftp.commands.TypeCommand;
 import ftp.commands.UserCommand;
 import ftp.exceptions.FTPException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class CommandExecutor {
@@ -95,20 +97,30 @@ public class CommandExecutor {
 	            command.execute(args, session, out);
 	        } else {
 	            logger.warn("Unknown command: {}", commandName);
-	            out.print("502 Command not implemented.\r\n");
-	            out.flush();
+	            sendResponse(out,
+					new FtpResponse(
+							FtpResponseCode.COMMAND_NOT_IMPLEMENTED));
 	        }
 	    } catch (FTPException e) {
-	        logger.error("Protocol Error ({}): {}", e.getStatusCode(), e.getMessage());
+	        // catches ALL our custom exceptions (501, 503, 530, 550, etc.)
+	        logger.error("Protocol Error ({}): {}", e.getResponseCode().getCode(), 
+			e.getMessage());
 	        
-	        out.print(e.getStatusCode() + " " + e.getMessage() + "\r\n");
-	        out.flush();
+			sendResponse(out, new FtpResponse(
+				e.getResponseCode(),
+				e.getMessage()
+			));
 	        
 	    } catch (Exception e) {
 	       
 	        logger.error("Internal Server Error", e);
-	        out.print("451 Local error in processing.\r\n");
-	        out.flush();
+	        sendResponse(out, new FtpResponse(FtpResponseCode.LOCAL_ERROR));
 	    }
 	}
+
+	private void sendResponse(PrintWriter out, FtpResponse response) {
+    out.print(response.serialize());
+    out.flush();
+}
+
 }

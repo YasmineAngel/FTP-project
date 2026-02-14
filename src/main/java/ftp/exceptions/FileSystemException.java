@@ -1,8 +1,10 @@
 package ftp.exceptions;
 
-public class FileSystemException extends FTPException {
+import ftp.protocol.FtpResponseCode;
 
-    public FileSystemException(String message, int statusCode) {
-        super(statusCode, message);
+public class FileSystemException extends FTPException {
+    
+    public FileSystemException(String message) {
+        super(FtpResponseCode.FILE_UNAVAILABLE, message);
     }
 }

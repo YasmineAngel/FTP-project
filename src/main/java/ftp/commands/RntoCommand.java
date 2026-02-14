@@ -1,20 +1,22 @@
 package ftp.commands;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import ftp.exceptions.AuthException;
 import ftp.exceptions.FTPException;
+import ftp.exceptions.FileSystemException;
 import ftp.exceptions.SequenceException;
 import ftp.exceptions.SyntaxException;
-import ftp.exceptions.FileSystemException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class RntoCommand implements FTPCommand {
@@ -55,24 +57,29 @@ public class RntoCommand implements FTPCommand {
 
             if (to == null) {
                 logger.error("S -> C: 550 Access denied.");
-                throw new FileSystemException("Access denied.", 550);
+                throw new FileSystemException("Access denied.");
             }
 
             if (Files.exists(to)) {
                 logger.error("S -> C: 550 Target already exists.");
-                throw new FileSystemException("Target already exists.", 550);
+                throw new FileSystemException("Target already exists.");
             }
 
             Files.move(from, to);
 
-            String response = "250 Rename successful.";
-            out.println(response);
-            logger.debug("S -> C: {}", response);
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.FILE_ACTION_OK,
+                "Rename successful."
+            );
+            out.print(response.serialize());
+            out.flush();
+
+            logger.debug("S -> C: {}", response.serialize().trim());
 
         } catch (IOException e) {
 
             logger.error("Rename failed from {} to {}: {}", from, to, e.getMessage());
-            throw new FileSystemException("Rename operation failed.", 550);
+            throw new FileSystemException("Rename operation failed.");
 
         } finally {
             session.clearRenameFrom();
