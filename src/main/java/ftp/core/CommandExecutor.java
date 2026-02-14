@@ -34,6 +34,7 @@ import ftp.commands.UserCommand;
 import ftp.exceptions.FTPException;
 import ftp.model.UserSession;
 import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class CommandExecutor {
@@ -96,8 +97,9 @@ public class CommandExecutor {
 	            command.execute(args, session, out);
 	        } else {
 	            logger.warn("Unknown command: {}", commandName);
-	            out.print("502 Command not implemented.\r\n");
-	            out.flush();
+	            sendResponse(out,
+					new FtpResponse(
+							FtpResponseCode.COMMAND_NOT_IMPLEMENTED));
 	        }
 	    } catch (FTPException e) {
 	        // catches ALL our custom exceptions (501, 503, 530, 550, etc.)
@@ -109,13 +111,11 @@ public class CommandExecutor {
 				e.getResponseCode(),
 				e.getMessage()
 			));
-	        out.flush();
 	        
 	    } catch (Exception e) {
 	       
 	        logger.error("Internal Server Error", e);
-	        out.print("451 Local error in processing.\r\n");
-	        out.flush();
+	        sendResponse(out, new FtpResponse(FtpResponseCode.LOCAL_ERROR));
 	    }
 	}
 
