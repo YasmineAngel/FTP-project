@@ -53,7 +53,7 @@ public class RetrCommand implements FTPCommand {
         }
 
 
-        lockManager.acquireWriteLock(filePath);
+        lockManager.acquireReadLock(filePath);
 
         long restartMarker = session.getRestartMarker();
         session.clearRestartMarker(); 
@@ -95,7 +95,7 @@ public class RetrCommand implements FTPCommand {
                 session.clearPassiveServer();
                 session.clearPortMode();
 
-                lockManager.releaseWriteLock(filePath);
+                lockManager.releaseReadLock(filePath);
 
             } catch (IOException | ConnectionException e) {
                 throw new ConnectionException(e.getMessage());

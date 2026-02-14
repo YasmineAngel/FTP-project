@@ -1,11 +1,31 @@
 # FTP Server Implementation with Java
-
-**Yasmine Kaouther Boudour, Hanan Miftah Agraw, Blen Assefa Tilahun** — 14/02/26 <br>
 ![Java 17](https://img.shields.io/badge/Java-17-007396?logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white)
 ![JUnit 5](https://img.shields.io/badge/Tested_with-JUnit_5-25A162?logo=java)
-![JaCoCo](https://img.shields.io/badge/Coverage-77%25-yellowgreen)
+![JaCoCo](https://img.shields.io/badge/Coverage-79%25-yellowgreen)
 ![FTP Protocol](https://img.shields.io/badge/Protocol-FTP_(RFC_959)-blue)
+<br>
+**Yasmine Kaouther Boudour, Hanan Miftah Agraw, Blen Assefa Tilahun** — 14/02/26 
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Build and Run Instructions](#build-and-run-instructions)
+  - [Prerequisites](#prerequisites)
+  - [Build the Project](#build-the-project)
+  - [Execute the Generated Jar File](#execute-the-generated-jar-file)
+  - [Run Tests](#run-tests)
+  - [Get Test Coverage Report](#get-test-coverage-report)
+- [Server Configuration](#server-configuration)
+- [Project Setup](#project-setup)
+  - [Folder Structure](#folder-structure)
+- [Supported Commands](#supported-commands)
+- [Code Samples](#code-samples)
+- [Test Coverage](#test-coverage)
+- [UML Diagram](#uml-diagram)
+- [Design Decisions](#design-decisions)
+- [Task Classification](#task-classification)
+
 ## Introduction
 
 This project implements an FTP server with a file structure starting at [ftp-root](ftp-root/) folder. The server follows most [RFC 959](http://abcdrfc.free.fr/rfc-vf/pdf/rfc959.pdf) protocols enabling a client to connect to it, list its file contents, traverse its file structure, upload new contents, download its contents, create and delete directories and files, abort connections or transfers, and more. In addition, The server supports both PASV and ACTIVE connection transfer modes from the client. The project is implemented with Java programming language and uses maven for build and test automation.
@@ -33,10 +53,19 @@ java -jar target/ftp-server-1.0.0.jar
 ```shell
 mvn clean test
 ```
+### Get Test Coverage Report
+Generates an html inside target/site/jacoco with the first command and open it with the second
+
+```shell
+
+mvn jacoco:report
+
+open  target/site/jacoco/index.html
+```
 ## Server Configuration
 
 By default the server:
-- Runs on port 2121
+- Runs on port 2126
 - Uses ftp_root/ as the root directory
 - Supports anonymous login
 
@@ -72,13 +101,23 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       ├── model/                   <-- Shared Data
 │   │   │       │   └── UserSession.java     <-- Session State Tracking
 │   │   │       ├── exceptions/              <-- Shared Logic
-│   │   │       │   └── FTPException.java    <-- Custom Exceptions
-│   │   │       └── utils/
-│   │   │           └── PathUtils.java       
+│   │   │       │   │── FTPException.java    <-- Custom Exceptions
+│   │   │       │   │── AuthException.java
+│   │   │       │   │── ConnectionException.java
+│   │   │       │   │── FileSystemException.java
+│   │   │       │   │── IllegalCommandException.java
+│   │   │       │   │── SequenceException.java
+│   │   │       │   │── SyntaxException.java
+│   │   │       │   │── TransferException.java
+│   │   │       │   │── UnavailableFileException.java
+│   |   |       │   └── StorageException.java
+│   │   │       └── utils/                   <-- Shared Logic
+│   │   │           |── PathUtils.java      
+│   |   │           └── FileLockManager.java   
 │   │   └── resources/
 │   │       └── log4j2.xml                    <-- Logging Config
-|   └-─ test/                                 <-- Logging Config
-|
+│   └-─ test/                                 <-- Unit test files Config
+│
 ├── ftp_root/                                 <-- Server's file storage(root directory)
 ├── pom.xml                                   <-- Maven Configuration
 └── README.md
@@ -95,9 +134,26 @@ RETR, STOR, APPEn, REST
 MKD, RMD, DELE  
 RNFR, RNTO  
 TYPE, REIN, ABOR  
-HELP, NOOP, SYST  
+HELP, NOOP, SYST, APPE  
 
 ## Code Samples
+The main FTP server logic
+![FTP Server](docs/code_snippets/FTP%20Server.png)
+
+Command Interface - the base of all commands
+![Command Interface](docs/code_snippets/Command%20Interface.png)
+
+File lock management package design
+![File Lock Manager](docs/code_snippets/File%20Lock%20Manager.png)
+
+Command line options configurations
+![Pico Cli Plugin](docs/code_snippets/picocli.png)
+
+Path related functionalities common utility design
+![Path Related Functionalites](docs/code_snippets/Path%20Related%20Functionalites.png)
+
+## Test coverage
+![Test_coverage_report](docs/Test%20Coverage.png)
 
 ## UML diagram
 ![UML_diagram](docs/Class%20Diagram%20UML.png)
