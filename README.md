@@ -2,7 +2,7 @@
 ![Java 17](https://img.shields.io/badge/Java-17-007396?logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white)
 ![JUnit 5](https://img.shields.io/badge/Tested_with-JUnit_5-25A162?logo=java)
-![JaCoCo](https://img.shields.io/badge/Coverage-79%25-yellowgreen)
+![JaCoCo](https://img.shields.io/badge/Coverage-87%25-yellowgreen)
 ![FTP Protocol](https://img.shields.io/badge/Protocol-FTP_(RFC_959)-blue)
 <br>
 **Yasmine Kaouther Boudour, Hanan Miftah Agraw, Blen Assefa Tilahun** — 14/02/26 
@@ -59,7 +59,6 @@ Generates an html inside target/site/jacoco with the first command and open it w
 ```shell
 
 mvn jacoco:report
-
 open  target/site/jacoco/index.html
 ```
 ## Server Configuration
@@ -89,17 +88,22 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       │   ├── FTPServer.java       <-- Socket Accept Loop
 │   │   │       │   ├── ClientHandler.java   <-- Thread management
 │   │   │       │   └── CommandExecutor.java <-- Command Dispatcher
+│   │   │       │
 │   │   │       ├── commands/                <-- Hanan's Domain
-│   │   │       │   ├── FTPCommand.java      <-- Interface (The "Contract")
+│   │   │       │   ├── CwdCommand.java
 │   │   │       │   ├── UserCommand.java
 │   │   │       │   ├── PassCommand.java
-│   │   │       │   └── CwdCommand.java
+│   │   │       │   ...
+│   │   │       │   └── FTPCommand.java      <-- Interface (The "Contract")
+│   │   │       │
 │   │   │       ├── data/                    <-- Blen's Domain
 │   │   │       │   ├── PassiveServer.java   <-- PASV Logic
 │   │   │       │   ├── ListManager.java     <-- Directory Listing
 │   │   │       │   └── TransferManager.java <-- File Upload/Download
+│   │   │       │
 │   │   │       ├── model/                   <-- Shared Data
 │   │   │       │   └── UserSession.java     <-- Session State Tracking
+│   │   │       │
 │   │   │       ├── exceptions/              <-- Shared Logic
 │   │   │       │   │── FTPException.java    <-- Custom Exceptions
 │   │   │       │   │── AuthException.java
@@ -111,6 +115,11 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       │   │── TransferException.java
 │   │   │       │   │── UnavailableFileException.java
 │   |   |       │   └── StorageException.java
+│   │   │       │
+│   │   │       ├── protocol/              
+│   │   │       │   │── FTPResponse.java    <-- Response construction
+│   │   │       │   └──  FTPResponseCode.java
+│   │   │       │
 │   │   │       └── utils/                   <-- Shared Logic
 │   │   │           |── PathUtils.java      
 │   |   │           └── FileLockManager.java   
@@ -239,6 +248,7 @@ Client                    Control Connection                         Data Connec
 - Remove nested Exceptions
 - Remove unnecessary comments
 - Add README documentation
+- Add more tests to reach 87% code coverage
 - Add Video demo
 
 ## Task Classification

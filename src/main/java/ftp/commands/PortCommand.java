@@ -10,6 +10,9 @@ import org.apache.logging.log4j.Logger;
 import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+
 public class PortCommand implements FTPCommand {
     
     private static final Logger logger = LogManager.getLogger(PortCommand.class);
@@ -17,13 +20,21 @@ public class PortCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws ftp.exceptions.FTPException {
         if (!session.isLoggedIn()) {
-            out.print("530 Not logged in.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.NOT_LOGGED_IN
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.SYNTAX_ERROR_IN_ARGUMENTS
+        );
 
+        
         if (args == null || args.trim().isEmpty()) {
-            out.print("501 Syntax error in parameters.\r\n");
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -31,7 +42,7 @@ public class PortCommand implements FTPCommand {
         
         String[] parts = args.split(",");
         if (parts.length != 6) {
-            out.print("501 Syntax error in parameters.\r\n");
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -42,24 +53,32 @@ public class PortCommand implements FTPCommand {
             for (int i = 0; i < 4; i++) {
                 int octet = Integer.parseInt(parts[i].trim());
                 if (octet < 0 || octet > 255) {
-                    out.print("501 Invalid IP address.\r\n");
+                    response = new FtpResponse(
+                        FtpResponseCode.INVALID_ARGUMENTS,
+                        "Invalid IP address."
+                    );
+                   out.print(response.serialize());
                     out.flush();
                     return;
                 }
                 address[i] = (byte) octet;
             }
 
-           
+            response = new FtpResponse(
+                FtpResponseCode.INVALID_ARGUMENTS,
+                "Invalid port number."
+            );
             int p1 = Integer.parseInt(parts[4].trim());
             int p2 = Integer.parseInt(parts[5].trim());
             if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255) {
-                out.print("501 Invalid port number.\r\n");
+                
+                out.print(response.serialize());
                 out.flush();
                 return;
             }
             int port = p1 * 256 + p2;
             if (port < 1 || port > 65535) {
-                out.print("501 Invalid port number.\r\n");
+                out.print(response.serialize());
                 out.flush();
                 return;
             }
@@ -75,15 +94,26 @@ public class PortCommand implements FTPCommand {
             }
 
             session.setPortMode(port, clientAddress);
-
-            out.print("200 PORT command successful.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.COMMAND_OK,
+                "PORT command successful."
+            );
+            out.print(response.serialize());
             out.flush();
+            
             logger.info("PORT mode set: {}:{}", clientAddress.getHostAddress(), port);
         } catch (NumberFormatException e) {
-            out.print("501 Syntax error in parameters.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.SYNTAX_ERROR_IN_ARGUMENTS
+            );
+            out.print(response.serialize());
             out.flush();
         } catch (UnknownHostException e) {
-            out.print("501 Invalid IP address.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.INVALID_ARGUMENTS,
+                "Invalid IP address."
+            );
+            out.print(response.serialize());        
             out.flush();
         }
     }

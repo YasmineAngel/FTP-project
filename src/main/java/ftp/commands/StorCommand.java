@@ -1,5 +1,8 @@
 package ftp.commands;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -11,10 +14,13 @@ import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
 
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+
 public class StorCommand implements FTPCommand {
     
     private final PathUtils pathUtils;
-    
+    private static final Logger logger = LogManager.getLogger(UserCommand.class);
 
     public StorCommand(PathUtils pathUtils) {
         this.pathUtils = pathUtils;
@@ -22,16 +28,24 @@ public class StorCommand implements FTPCommand {
 
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws ftp.exceptions.FTPException {
-    	System.out.println("Session Object ID: " + System.identityHashCode(session));
+    	logger.debug("Session Object ID: " + System.identityHashCode(session));
 
         if (!session.isLoggedIn()) {
-            out.print("530 Not logged in.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.NOT_LOGGED_IN
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
 
         if (args == null || args.trim().isEmpty()) {
-            out.print("501 Syntax error in parameters.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.SYNTAX_ERROR_IN_ARGUMENTS
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -41,7 +55,11 @@ public class StorCommand implements FTPCommand {
         boolean isPortMode = session.hasPortMode();
         
         if (!isPassiveMode && !isPortMode) {
-            out.print("425 Use PORT or PASV first.\r\n");
+           FtpResponse response = new FtpResponse(
+                FtpResponseCode.INITIALIZE_TRANSFER_MODE_FIRST
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -49,19 +67,32 @@ public class StorCommand implements FTPCommand {
         FileLockManager lockManager = FileLockManager.getInstance();
         Path filePath = pathUtils.resolve(session.getCurrentDirectory(), args);
 
+        
         if (filePath == null || !pathUtils.isWithinRoot(filePath)) {
-            out.print("550 Invalid path.\r\n");
+           FtpResponse response = new FtpResponse(
+                FtpResponseCode.FILE_UNAVAILABLE,
+                "Invalid Path"
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
-
+        lockManager.acquireWriteLock(filePath);
         long restartMarker = session.getRestartMarker();
         session.clearRestartMarker(); 
 
         String mode = session.getTransferType() == UserSession.TransferType.ASCII 
             ? "ASCII" : "BINARY";
         String restartMsg = restartMarker > 0 ? " (restarting at " + restartMarker + ")" : "";
-        out.print("150 Opening " + mode + " mode data connection for " + args + restartMsg + ".\r\n");
+
+         FtpResponse response = new FtpResponse(
+            FtpResponseCode.DATA_CONNECTION_START,
+            "Opening " + mode + " mode data connection for " + args + restartMsg 
+
+        );
+
+        out.print(response.serialize());
         out.flush();
 
         Socket dataSocket = null;
@@ -75,15 +106,24 @@ public class StorCommand implements FTPCommand {
 
             TransferManager.receiveFile(filePath, dataSocket, restartMarker);
             
-            out.print("226 Transfer complete.\r\n");
+           response = new FtpResponse(
+                FtpResponseCode.DATA_TRANSFER_COMPLETE
+            );
+
+            out.print(response.serialize());
             out.flush();
             
         } catch (IOException e) {
-        	out.print("426 Connection closed; transfer aborted.\r\n");
+        	response = new FtpResponse(
+                FtpResponseCode.CONNECTION_CLOSED
+            );
+
+            out.print(response.serialize());
             out.flush();
             throw new ConnectionException("Transfer interrupted: " + e.getMessage());
             
         } finally {
+            lockManager.releaseWriteLock(filePath);
             try {
             	if (dataSocket != null) {
                     dataSocket.close();
