@@ -12,6 +12,10 @@ import ftp.exceptions.UnavailableFileException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
 
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+
+
 public class ListCommand implements FTPCommand {
     private final PathUtils pathUtils;
 
@@ -22,7 +26,11 @@ public class ListCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
         if (!session.isLoggedIn()) {
-            out.print("530 Not logged in.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.NOT_LOGGED_IN
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -31,18 +39,28 @@ public class ListCommand implements FTPCommand {
         boolean isPortMode = session.hasPortMode();
         
         if (!isPassiveMode && !isPortMode) {
-            out.print("425 Use PORT or PASV first.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.INITIALIZE_TRANSFER_MODE_FIRST
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
-
-        out.print("150 Opening data connection for directory list.\r\n");
+        FtpResponse response = new FtpResponse(
+                FtpResponseCode.DATA_CONNECTION_START,
+                 "for directory list"
+        );
+        out.print(response.serialize());
         out.flush();
 
         Path dirToList = pathUtils.resolve(session.getCurrentDirectory(), args);
 
         if (!pathUtils.isExistingDirectory(dirToList)) {
-            out.print("550 Directory not found.\r\n");
+            response = new FtpResponse(
+                    FtpResponseCode.FILE_UNAVAILABLE         
+            );
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -60,8 +78,13 @@ public class ListCommand implements FTPCommand {
 
         try {
             ListManager.sendDirectoryListing(dirToList, dataSocket, pathUtils);
-            out.print("226 Transfer complete.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.DATA_TRANSFER_COMPLETE
+            );
+
+            out.print(response.serialize());
             out.flush();
+
         } catch (UnavailableFileException | ConnectionException e) {
             throw e;
         } finally {

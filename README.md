@@ -111,6 +111,9 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       │   │── TransferException.java
 │   │   │       │   │── UnavailableFileException.java
 │   |   |       │   └── StorageException.java
+│   │   │       ├── protocol/              
+│   │   │       │   │── FTPResponse.java    <-- Response construction
+│   │   │       │   └──  FTPResponseCode.java
 │   │   │       └── utils/                   <-- Shared Logic
 │   │   │           |── PathUtils.java      
 │   |   │           └── FileLockManager.java   

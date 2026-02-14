@@ -11,10 +11,13 @@ import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
 
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+
 public class RetrCommand implements FTPCommand {
     
     private final PathUtils pathUtils;
-
+    
     public RetrCommand(PathUtils pathUtils) {
         this.pathUtils = pathUtils;
     }
@@ -22,13 +25,20 @@ public class RetrCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws ftp.exceptions.FTPException {
         if (!session.isLoggedIn()) {
-            out.print("530 Not logged in.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.NOT_LOGGED_IN
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
 
         if (args == null || args.trim().isEmpty()) {
-            out.print("501 Syntax error in parameters.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.SYNTAX_ERROR_IN_ARGUMENTS
+            );
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -38,7 +48,11 @@ public class RetrCommand implements FTPCommand {
         boolean isPortMode = session.hasPortMode();
         
         if (!isPassiveMode && !isPortMode) {
-            out.print("425 Use PORT or PASV first.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.INITIALIZE_TRANSFER_MODE_FIRST
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -47,7 +61,11 @@ public class RetrCommand implements FTPCommand {
 
        
         if (filePath == null || !pathUtils.exists(filePath) || !pathUtils.isFile(filePath)) {
-            out.print("550 File not found.\r\n");
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.FILE_UNAVAILABLE
+            );
+
+            out.print(response.serialize());
             out.flush();
             return;
         }
@@ -62,8 +80,15 @@ public class RetrCommand implements FTPCommand {
         String mode = session.getTransferType() == UserSession.TransferType.ASCII 
             ? "ASCII" : "BINARY";
         String restartMsg = restartMarker > 0 ? " (restarting at " + restartMarker + ")" : "";
-        out.print("150 Opening " + mode + " mode data connection for " + args + restartMsg + ".\r\n");
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.DATA_CONNECTION_START,
+            "Opening " + mode + " mode data connection for " + args + restartMsg
+
+        );
+
+        out.print(response.serialize());
         out.flush();
+        
 
 
         Socket dataSocket = null;
@@ -78,12 +103,20 @@ public class RetrCommand implements FTPCommand {
 
             TransferManager.sendFile(filePath, dataSocket, restartMarker);
             session.clearRestartMarker();
-            
-            out.print("226 Transfer complete.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.DATA_TRANSFER_COMPLETE
+            );
+
+            out.print(response.serialize());
             out.flush();
+           
 
         } catch (IOException e) {
-            out.print("426 Connection closed; transfer aborted.\r\n");
+            response = new FtpResponse(
+                FtpResponseCode.CONNECTION_CLOSED
+            );
+
+            out.print(response.serialize());
             out.flush();
             throw new ConnectionException("Download interrupted: " + e.getMessage());
             
