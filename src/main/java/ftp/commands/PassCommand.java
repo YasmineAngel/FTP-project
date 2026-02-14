@@ -17,10 +17,10 @@ public class PassCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: PASS ******");
+        logger.debug("C -> S: PASS ******");
 
         if (session.getUsername() == null) {
-            logger.info("S -> C: 503 Bad sequence of commands.");
+            logger.error("S -> C: 503 Bad sequence of commands.");
             throw new SequenceException("Bad sequence of commands.");
         }
 
@@ -29,6 +29,6 @@ public class PassCommand implements FTPCommand {
         String response = "230 User logged in, proceed.";
         out.println(response);
 
-        logger.info("S -> C: {}", response);
+        logger.debug("S -> C: {}", response);
     }
 }

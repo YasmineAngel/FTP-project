@@ -27,22 +27,22 @@ public class RnfrCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: RNFR {}", args);
+        logger.debug("C -> S: RNFR {}", args);
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
         Path target = pathUtils.resolve(session.getCurrentDirectory(), args);
 
         if (target == null || !Files.exists(target)) {
-            logger.info("S -> C: 550 File or directory does not exist.");
+            logger.error("S -> C: 550 File or directory does not exist.");
             throw new FileSystemException("File or directory does not exist.", 550);
         }
 
@@ -51,6 +51,6 @@ public class RnfrCommand implements FTPCommand {
         String response = "350 Ready for RNTO.";
         out.println(response);
 
-        logger.info("S -> C: {}", response);
+        logger.debug("S -> C: {}", response);
     }
 }

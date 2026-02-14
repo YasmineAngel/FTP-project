@@ -28,29 +28,29 @@ public class MkdCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: MKD {}", args);
+        logger.debug("C -> S: MKD {}", args);
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
         Path target = pathUtils.resolve(session.getCurrentDirectory(), args);
 
         if (target == null) {
-            logger.info("S -> C: 550 Access denied.");
+            logger.error("S -> C: 550 Access denied.");
             throw new FileSystemException("Access denied.", 550);
         }
 
         try {
 
             if (Files.exists(target)) {
-                logger.info("S -> C: 550 Directory already exists.");
+                logger.error("S -> C: 550 Directory already exists.");
                 throw new FileSystemException("Directory already exists.", 550);
             }
 
@@ -60,7 +60,7 @@ public class MkdCommand implements FTPCommand {
             String response = "257 \"" + ftpPath + "\" directory created.";
 
             out.println(response);
-            logger.info("S -> C: {}", response);
+            logger.debug("S -> C: {}", response);
 
         } catch (IOException e) {
 

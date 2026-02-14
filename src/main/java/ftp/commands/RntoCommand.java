@@ -30,21 +30,21 @@ public class RntoCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: RNTO {}", args);
+        logger.debug("C -> S: RNTO {}", args);
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
         String fromPathStr = session.getRenameFrom();
         if (fromPathStr == null) {
-            logger.info("S -> C: 503 Bad sequence of commands.");
+            logger.error("S -> C: 503 Bad sequence of commands.");
             throw new SequenceException("Bad sequence of commands.");
         }
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
@@ -54,12 +54,12 @@ public class RntoCommand implements FTPCommand {
         try {
 
             if (to == null) {
-                logger.info("S -> C: 550 Access denied.");
+                logger.error("S -> C: 550 Access denied.");
                 throw new FileSystemException("Access denied.", 550);
             }
 
             if (Files.exists(to)) {
-                logger.info("S -> C: 550 Target already exists.");
+                logger.error("S -> C: 550 Target already exists.");
                 throw new FileSystemException("Target already exists.", 550);
             }
 
@@ -67,7 +67,7 @@ public class RntoCommand implements FTPCommand {
 
             String response = "250 Rename successful.";
             out.println(response);
-            logger.info("S -> C: {}", response);
+            logger.debug("S -> C: {}", response);
 
         } catch (IOException e) {
 

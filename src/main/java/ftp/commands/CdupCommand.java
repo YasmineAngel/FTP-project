@@ -24,10 +24,10 @@ public class CdupCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: CDUP");
+        logger.debug("C -> S: CDUP");
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
@@ -39,6 +39,6 @@ public class CdupCommand implements FTPCommand {
 
         String response = "250 Directory changed to " + newFtpPath;
         out.println(response);
-        logger.info("S -> C: {}", response);
+        logger.debug("S -> C: {}", response);
     }
 }

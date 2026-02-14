@@ -15,17 +15,17 @@ public class UserCommand implements FTPCommand {
 
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
-        logger.info("C -> S: USER {}", args);
+        logger.debug("C -> S: USER {}", args);
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
-        session.logout(); // reset any previous state
-        session.setUsername(args); // temporary login step (password comes next)
+        session.logout();
+        session.setUsername(args); 
 
         out.println("331 Username ok, need password.");
-        logger.info("S -> C: 331 Username ok, need password.");
+        logger.debug("S -> C: 331 Username ok, need password.");
     }
 }

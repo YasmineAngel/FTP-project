@@ -28,27 +28,27 @@ public class RmdCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: RMD {}", args);
+        logger.debug("C -> S: RMD {}", args);
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
         Path target = pathUtils.resolve(session.getCurrentDirectory(), args);
 
         if (target == null || !pathUtils.exists(target)) {
-            logger.info("S -> C: 550 Directory not found.");
+            logger.error("S -> C: 550 Directory not found.");
             throw new FileSystemException("Directory not found.", 550);
         }
 
         if (!pathUtils.isDirectory(target)) {
-            logger.info("S -> C: 550 Not a directory.");
+            logger.error("S -> C: 550 Not a directory.");
             throw new FileSystemException("Not a directory.", 550);
         }
 
@@ -59,7 +59,7 @@ public class RmdCommand implements FTPCommand {
             String response = "250 Directory removed successfully.";
             out.println(response);
 
-            logger.info("S -> C: {}", response);
+            logger.debug("S -> C: {}", response);
 
         } catch (IOException e) {
 

@@ -22,13 +22,10 @@ public class UserSession {
 
     private long restartMarker = 0;
 
-    // Navigation state
     private String currentDirectory = "/";
 
-    // Transfer settings
     private TransferType transferType = TransferType.ASCII;
 
-    // Connection state
     private boolean connected = true;
     
     private volatile Socket activeDataSocket;
