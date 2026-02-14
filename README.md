@@ -89,17 +89,22 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       │   ├── FTPServer.java       <-- Socket Accept Loop
 │   │   │       │   ├── ClientHandler.java   <-- Thread management
 │   │   │       │   └── CommandExecutor.java <-- Command Dispatcher
+│   │   │       │
 │   │   │       ├── commands/                <-- Hanan's Domain
-│   │   │       │   ├── FTPCommand.java      <-- Interface (The "Contract")
+│   │   │       │   ├── CwdCommand.java
 │   │   │       │   ├── UserCommand.java
 │   │   │       │   ├── PassCommand.java
-│   │   │       │   └── CwdCommand.java
+│   │   │       │   ...
+│   │   │       │   └── FTPCommand.java      <-- Interface (The "Contract")
+│   │   │       │
 │   │   │       ├── data/                    <-- Blen's Domain
 │   │   │       │   ├── PassiveServer.java   <-- PASV Logic
 │   │   │       │   ├── ListManager.java     <-- Directory Listing
 │   │   │       │   └── TransferManager.java <-- File Upload/Download
+│   │   │       │
 │   │   │       ├── model/                   <-- Shared Data
 │   │   │       │   └── UserSession.java     <-- Session State Tracking
+│   │   │       │
 │   │   │       ├── exceptions/              <-- Shared Logic
 │   │   │       │   │── FTPException.java    <-- Custom Exceptions
 │   │   │       │   │── AuthException.java
@@ -111,9 +116,11 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │       │   │── TransferException.java
 │   │   │       │   │── UnavailableFileException.java
 │   |   |       │   └── StorageException.java
+│   │   │       │
 │   │   │       ├── protocol/              
 │   │   │       │   │── FTPResponse.java    <-- Response construction
 │   │   │       │   └──  FTPResponseCode.java
+│   │   │       │
 │   │   │       └── utils/                   <-- Shared Logic
 │   │   │           |── PathUtils.java      
 │   |   │           └── FileLockManager.java   
