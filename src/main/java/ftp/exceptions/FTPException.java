@@ -1,15 +1,19 @@
 package ftp.exceptions;
 
-public abstract class FTPException extends Exception {
-	private static final long serialVersionUID = 1L;
-    private final int statusCode;
+import ftp.protocol.FtpResponseCode;
 
-    public FTPException(int statusCode, String message) {
+public abstract class FTPException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
+    private final FtpResponseCode responseCode;
+
+    public FTPException(FtpResponseCode responseCode, String message) {
         super(message);
-        this.statusCode = statusCode;
+        this.responseCode = responseCode;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public FtpResponseCode getResponseCode() {
+        return responseCode;
     }
 }

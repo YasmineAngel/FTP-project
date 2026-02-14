@@ -1,5 +1,7 @@
 package ftp.exceptions;
 
+import ftp.protocol.FtpResponseCode;
+
 public class TransferException extends FTPException {
     /**
 	 * 
@@ -8,6 +10,6 @@ public class TransferException extends FTPException {
 
 	public TransferException(String message) {
         // Pass the 426 status code and the message to the parent
-        super(426, message); 
+        super(FtpResponseCode.CONNECTION_CLOSED, message); 
     }
 }
