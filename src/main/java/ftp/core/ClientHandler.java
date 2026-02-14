@@ -1,43 +1,50 @@
 package ftp.core;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.net.Socket;
 
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 
 public class ClientHandler implements Runnable {
-    private final Socket socket;
-    private final String rootPath;
-    private final CommandExecutor commandExecutor; 
-    private static final Logger logger =LogManager.getLogger(ClientHandler.class);
-    public ClientHandler(Socket socket, String rootPath) {
-        this.socket = socket;
-        this.rootPath = rootPath;
-        this.commandExecutor = new CommandExecutor(rootPath);
-    }
+	private final Socket socket;
+	private final String rootPath;
+	private final CommandExecutor commandExecutor;
+	private static final Logger logger = LogManager.getLogger(ClientHandler.class);
 
-    @Override
-    public void run() {
-        try (
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
-        ) {
-            out.print("220 Welcome to our Team FTP Server\r\n");
-            out.flush(); 
-            UserSession session = new UserSession();
-            logger.info("Session started for client: {}", socket.getRemoteSocketAddress());
-             while (session.isConnected()) {
-                String line = in.readLine();
-                if (line == null) break;
-                logger.debug("C -> S: {}", line);
-                commandExecutor.execute(line, session, out);
-             }
+	public ClientHandler(Socket socket, String rootPath) {
+		this.socket = socket;
+		this.rootPath = rootPath;
+		this.commandExecutor = new CommandExecutor(rootPath);
+	}
 
-        } catch (IOException e) {
-        	logger.warn("Client Disconnected",e);
-        }finally {
-            logger.info("Client session ended.");
-        }
-    }
+	@Override
+	public void run() {
+		try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+			sendResponse(out, new FtpResponse(FtpResponseCode.SERVICE_READY, "Welcome to our Team FTP Server"));
+			UserSession session = new UserSession();
+			logger.info("Session started for client: {}", socket.getRemoteSocketAddress());
+			while (session.isConnected()) {
+				String line = in.readLine();
+				if (line == null)
+					break;
+				logger.debug("C -> S: {}", line);
+				commandExecutor.execute(line, session, out);
+			}
+
+		} catch (IOException e) {
+			logger.warn("Client Disconnected", e);
+		} finally {
+			logger.info("Client session ended.");
+		}
+	}
+
+	private void sendResponse(PrintWriter out, FtpResponse response) {
+		out.print(response.serialize());
+		out.flush();
+	}
 }

@@ -38,89 +38,74 @@ import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class CommandExecutor {
-    private static final Logger logger = LogManager.getLogger(CommandExecutor.class);
-    private final Map<String, FTPCommand> commands = new HashMap<>();
-    private final PathUtils pathUtils ;
+	private static final Logger logger = LogManager.getLogger(CommandExecutor.class);
+	private final Map<String, FTPCommand> commands = new HashMap<>();
+	private final PathUtils pathUtils;
 
-    public CommandExecutor(String rootPath) {
-    	this.pathUtils = new PathUtils(rootPath);
-        commands.put("USER", new UserCommand());
-        commands.put("PASS", new PassCommand());
-        commands.put("PWD", new PwdCommand(pathUtils));
-        commands.put("SYST", new SystCommand());
-        commands.put("TYPE", new TypeCommand());
-        commands.put("LIST", new ListCommand(pathUtils));
-        commands.put("PASV", new PasvCommand());
-        commands.put("RETR", new RetrCommand(pathUtils));
-        commands.put("STOR", new StorCommand(pathUtils));
-        commands.put("CWD", new CwdCommand(pathUtils));
-        commands.put("CDUP", new CdupCommand(pathUtils));
-        commands.put("REIN", new ReinCommand());
-        commands.put("ABOR", new AborCommand());
-        commands.put("HELP", new HelpCommand());
-        commands.put("NOOP", new NoopCommand());
-        commands.put("MKD", new MkdCommand(pathUtils));
-        commands.put("RMD", new RmdCommand(pathUtils));
-        commands.put("RNFR", new RnfrCommand(pathUtils));
-        commands.put("RNTO", new RntoCommand(pathUtils));
-        commands.put("PORT", new PortCommand());
-        commands.put("REST", new RestCommand());
-        commands.put("DELE", new DeleCommand(pathUtils));
-        commands.put("APPE", new AppeCommand(pathUtils));
+	public CommandExecutor(String rootPath) {
+		this.pathUtils = new PathUtils(rootPath);
+		commands.put("USER", new UserCommand());
+		commands.put("PASS", new PassCommand());
+		commands.put("PWD", new PwdCommand(pathUtils));
+		commands.put("SYST", new SystCommand());
+		commands.put("TYPE", new TypeCommand());
+		commands.put("LIST", new ListCommand(pathUtils));
+		commands.put("PASV", new PasvCommand());
+		commands.put("RETR", new RetrCommand(pathUtils));
+		commands.put("STOR", new StorCommand(pathUtils));
+		commands.put("CWD", new CwdCommand(pathUtils));
+		commands.put("CDUP", new CdupCommand(pathUtils));
+		commands.put("REIN", new ReinCommand());
+		commands.put("ABOR", new AborCommand());
+		commands.put("HELP", new HelpCommand());
+		commands.put("NOOP", new NoopCommand());
+		commands.put("MKD", new MkdCommand(pathUtils));
+		commands.put("RMD", new RmdCommand(pathUtils));
+		commands.put("RNFR", new RnfrCommand(pathUtils));
+		commands.put("RNTO", new RntoCommand(pathUtils));
+		commands.put("PORT", new PortCommand());
+		commands.put("REST", new RestCommand());
+		commands.put("DELE", new DeleCommand(pathUtils));
+		commands.put("APPE", new AppeCommand(pathUtils));
 
+	}
 
-        
+	public void execute(String line, UserSession session, PrintWriter out) {
+		try {
+			if (line == null) {
+				session.disconnect();
+				return;
+			}
 
+			logger.info("Received command: {}", line);
 
+			String[] parts = line.trim().split("\\s+", 2);
+			String commandName = parts[0].toUpperCase();
+			String args = (parts.length > 1) ? parts[1] : null;
 
-        
+			FTPCommand command = commands.get(commandName);
 
-    }
+			if (command != null) {
+				command.execute(args, session, out);
+			} else {
+				logger.warn("Unknown command: {}", commandName);
+				sendResponse(out, new FtpResponse(FtpResponseCode.COMMAND_NOT_IMPLEMENTED));
+			}
+		} catch (FTPException e) {
+			logger.error("Protocol Error ({}): {}", e.getResponseCode().getCode(), e.getMessage());
 
-    public void execute(String line, UserSession session, PrintWriter out) {
-    	try {
-	    	if (line == null) {
-	            session.disconnect();
-	            return;
-	        }
-	
-	        logger.info("Received command: {}", line);
-	
-	       
-	        String[] parts = line.trim().split("\\s+", 2);
-	        String commandName = parts[0].toUpperCase();
-	        String args = (parts.length > 1) ? parts[1] : null;
-	
-	        FTPCommand command = commands.get(commandName);
-	
-	        if (command != null) {
-	            command.execute(args, session, out);
-	        } else {
-	            logger.warn("Unknown command: {}", commandName);
-	            sendResponse(out,
-					new FtpResponse(
-							FtpResponseCode.COMMAND_NOT_IMPLEMENTED));
-	        }
-	    } catch (FTPException e) {
-	        // catches ALL our custom exceptions (501, 503, 530, 550, etc.)
-	        logger.error("Protocol Error ({}): {}", e.getResponseCode().getCode(), 
-			e.getMessage());
-	        
-			sendResponse(out, new FtpResponse(
-				e.getResponseCode(),
-				e.getMessage()
-			));
-	        
-	    } catch (Exception e) {
-	       
-	        logger.error("Internal Server Error", e);
-	        sendResponse(out, new FtpResponse(FtpResponseCode.LOCAL_ERROR));
-	    }
+			sendResponse(out, new FtpResponse(e.getResponseCode(), e.getMessage()));
+
+		} catch (Exception e) {
+
+			logger.error("Internal Server Error", e);
+			sendResponse(out, new FtpResponse(FtpResponseCode.LOCAL_ERROR));
+		}
 	}
 
 	private void sendResponse(PrintWriter out, FtpResponse response) {
-    out.print(response.serialize());
-    out.flush();
-}
+		out.print(response.serialize());
+		out.flush();
+	}
 
 }

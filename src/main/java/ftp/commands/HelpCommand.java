@@ -1,6 +1,8 @@
 package ftp.commands;
 
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.exceptions.FTPException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -39,9 +41,9 @@ public class HelpCommand implements FTPCommand {
     	if (args != null && !args.trim().isEmpty()) {
             String cmd = args.trim().toUpperCase();
             if (COMMAND_DESCS.containsKey(cmd)) {
-                out.print("214 " + COMMAND_DESCS.get(cmd) + "\r\n");
+            	sendResponse(out, new FtpResponse(FtpResponseCode.COMMAND_OK, COMMAND_DESCS.get(cmd)));
             } else {
-                out.print("504 Help not available for: " + cmd + "\r\n");
+            	sendResponse(out, new FtpResponse(FtpResponseCode.COMMAND_NOT_IMPLEMENTED, "Help not available for: " + cmd));
             }
         } else {
             out.print("214-The following commands are recognized:\r\n");
@@ -50,8 +52,10 @@ public class HelpCommand implements FTPCommand {
             out.print("   File I/O: RETR, STOR, APPE, REST, ABOR\r\n");
             out.print("   Filesys:  CWD, CDUP, PWD, LIST, MKD, RMD, DELE, RNFR, RNTO\r\n");
             out.print("   Misc:     HELP, NOOP, SYST\r\n");
-            out.print("214 Help OK.\r\n");
-        }
+            sendResponse(out, new FtpResponse(FtpResponseCode.COMMAND_OK, "Help OK."));        }
+    }
+    private void sendResponse(PrintWriter out, FtpResponse response) {
+        out.print(response.serialize());
         out.flush();
     }
 }
