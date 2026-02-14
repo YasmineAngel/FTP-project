@@ -29,7 +29,7 @@ public class Main implements Runnable {
 
     @Override
     public void run() {
-
+        System.out.println("Log level is: " + logLevel);
         
         System.setProperty("logLevel", logLevel.toUpperCase());
         String rootPath = "./ftp-root"; 
