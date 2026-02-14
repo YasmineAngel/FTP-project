@@ -77,6 +77,8 @@ Use `--help` to list all options. Example: `java -jar target/ftp-server-1.0.0.ja
 │   │   │           └── PathUtils.java       
 │   │   └── resources/
 │   │       └── log4j2.xml                    <-- Logging Config
+|   └-─ test/                                 <-- Logging Config
+|
 ├── ftp_root/                                 <-- Server's file storage(root directory)
 ├── pom.xml                                   <-- Maven Configuration
 └── README.md
