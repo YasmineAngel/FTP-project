@@ -27,7 +27,6 @@ public class ListCommand implements FTPCommand {
             return;
         }
 
-        // Check if PORT or PASV mode is set
         boolean isPassiveMode = session.getPassiveServer() != null;
         boolean isPortMode = session.hasPortMode();
         
@@ -37,29 +36,22 @@ public class ListCommand implements FTPCommand {
             return;
         }
 
-        // 1. Notify control channel
         out.print("150 Opening data connection for directory list.\r\n");
         out.flush();
 
-        // 2. Resolve the directory to list
-        // If args is null, list current directory. If args is a path, list that.
         Path dirToList = pathUtils.resolve(session.getCurrentDirectory(), args);
 
-        // Validate directory exists
         if (dirToList == null || !pathUtils.exists(dirToList) || !pathUtils.isDirectory(dirToList)) {
             out.print("550 Directory not found.\r\n");
             out.flush();
             return;
         }
 
-        // 3. Accept or connect data connection and use ListManager
         Socket dataSocket;
         try {
             if (isPassiveMode) {
-                // PASV mode: accept connection from client
                 dataSocket = session.getPassiveServer().getServerSocket().accept();
             } else {
-                // PORT mode: connect to client
                 dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
             }
         } catch (IOException e) {
@@ -73,13 +65,12 @@ public class ListCommand implements FTPCommand {
         } catch (UnavailableFileException | ConnectionException e) {
             throw e;
         } finally {
-            // Shutdown output stream to signal EOF to the client, then close
             try {
                 if (!dataSocket.isClosed()) {
                     dataSocket.shutdownOutput();
                 }
             } catch (IOException ignored) {
-                // Ignore if already closed
+                throw new ConnectionException("Failed to close data connection: " + ignored.getMessage());
             }
             try {
                 if (!dataSocket.isClosed()) {
