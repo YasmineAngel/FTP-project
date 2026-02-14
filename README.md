@@ -31,7 +31,7 @@ java -jar target/ftp-server-1.0.0.jar
 
 ### Run Tests
 ```shell
-mvn test
+mvn clean test
 ```
 ## Server Configuration
 
