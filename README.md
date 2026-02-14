@@ -2,7 +2,7 @@
 ![Java 17](https://img.shields.io/badge/Java-17-007396?logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white)
 ![JUnit 5](https://img.shields.io/badge/Tested_with-JUnit_5-25A162?logo=java)
-![JaCoCo](https://img.shields.io/badge/Coverage-79%25-yellowgreen)
+![JaCoCo](https://img.shields.io/badge/Coverage-87%25-yellowgreen)
 ![FTP Protocol](https://img.shields.io/badge/Protocol-FTP_(RFC_959)-blue)
 <br>
 **Yasmine Kaouther Boudour, Hanan Miftah Agraw, Blen Assefa Tilahun** — 14/02/26 
@@ -59,7 +59,6 @@ Generates an html inside target/site/jacoco with the first command and open it w
 ```shell
 
 mvn jacoco:report
-
 open  target/site/jacoco/index.html
 ```
 ## Server Configuration
@@ -249,6 +248,7 @@ Client                    Control Connection                         Data Connec
 - Remove nested Exceptions
 - Remove unnecessary comments
 - Add README documentation
+- Add more tests to reach 87% code coverage
 - Add Video demo
 
 ## Task Classification
