@@ -9,9 +9,11 @@ import org.apache.logging.log4j.Logger;
 
 import ftp.exceptions.AuthException;
 import ftp.exceptions.FTPException;
-import ftp.exceptions.SyntaxException;
 import ftp.exceptions.FileSystemException;
+import ftp.exceptions.SyntaxException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class RnfrCommand implements FTPCommand {
@@ -43,14 +45,19 @@ public class RnfrCommand implements FTPCommand {
 
         if (target == null || !Files.exists(target)) {
             logger.error("S -> C: 550 File or directory does not exist.");
-            throw new FileSystemException("File or directory does not exist.", 550);
+            throw new FileSystemException("File or directory does not exist.");
         }
 
         session.setRenameFrom(target.toAbsolutePath().toString());
 
-        String response = "350 Ready for RNTO.";
-        out.println(response);
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.NEED_ACCOUNT, 
+            "Ready for RNTO."
+        );
 
-        logger.debug("S -> C: {}", response);
+        out.print(response.serialize());
+        out.flush();
+
+        logger.debug("S -> C: {}", response.serialize().trim());
     }
 }

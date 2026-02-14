@@ -1,13 +1,5 @@
 package ftp.commands;
 
-import ftp.exceptions.AuthException;
-import ftp.exceptions.FTPException;
-import ftp.exceptions.SyntaxException;
-import ftp.exceptions.FileSystemException;
-import ftp.model.UserSession;
-import ftp.utils.FileLockManager;
-import ftp.utils.PathUtils;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -15,6 +7,16 @@ import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import ftp.exceptions.AuthException;
+import ftp.exceptions.FTPException;
+import ftp.exceptions.FileSystemException;
+import ftp.exceptions.SyntaxException;
+import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+import ftp.utils.FileLockManager;
+import ftp.utils.PathUtils;
 
 public class DeleCommand implements FTPCommand {
 
@@ -47,12 +49,12 @@ public class DeleCommand implements FTPCommand {
 
         if (target == null || !pathUtils.exists(target)) {
             logger.error("S -> C: 550 File not found.");
-            throw new FileSystemException("File not found.", 550);
+            throw new FileSystemException("File not found.");
         }
 
         if (!pathUtils.isFile(target)) {
             logger.error("S -> C: 550 Not a regular file.");
-            throw new FileSystemException("Not a regular file.", 550);
+            throw new FileSystemException("Not a regular file.");
         }
 
         lockManager.acquireWriteLock(target);
@@ -60,16 +62,18 @@ public class DeleCommand implements FTPCommand {
         try {
             Files.delete(target);
 
-            String response = "250 File deleted successfully.";
-            out.println(response);
-            logger.debug("S -> C: {}", response);
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.FILE_ACTION_OK, 
+                "File deleted successfully."
+            );
+            out.print(response.serialize());
+            out.flush();
+            logger.debug("S -> C: {}", response.serialize().trim());
 
         } catch (IOException e) {
-
             logger.error("Delete failed for {}: {}", target, e.getMessage());
 
-            throw new FileSystemException("Delete operation failed.", 550);
-
+            throw new FileSystemException("Delete operation failed.");
         } finally {
             lockManager.releaseWriteLock(target);
         }

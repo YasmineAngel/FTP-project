@@ -1,12 +1,5 @@
 package ftp.commands;
 
-import ftp.exceptions.AuthException;
-import ftp.exceptions.FTPException;
-import ftp.exceptions.SyntaxException;
-import ftp.exceptions.FileSystemException;
-import ftp.model.UserSession;
-import ftp.utils.PathUtils;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -14,6 +7,15 @@ import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import ftp.exceptions.AuthException;
+import ftp.exceptions.FTPException;
+import ftp.exceptions.FileSystemException;
+import ftp.exceptions.SyntaxException;
+import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
+import ftp.utils.PathUtils;
 
 public class RmdCommand implements FTPCommand {
 
@@ -44,28 +46,33 @@ public class RmdCommand implements FTPCommand {
 
         if (target == null || !pathUtils.exists(target)) {
             logger.error("S -> C: 550 Directory not found.");
-            throw new FileSystemException("Directory not found.", 550);
+            throw new FileSystemException("Directory not found.");
         }
 
         if (!pathUtils.isDirectory(target)) {
             logger.error("S -> C: 550 Not a directory.");
-            throw new FileSystemException("Not a directory.", 550);
+            throw new FileSystemException("Not a directory.");
         }
 
         try {
 
             Files.delete(target); 
 
-            String response = "250 Directory removed successfully.";
-            out.println(response);
+            FtpResponse response = new FtpResponse(
+                FtpResponseCode.FILE_ACTION_OK,
+                "Directory removed successfully."
+            );
 
-            logger.debug("S -> C: {}", response);
+            out.print(response.serialize());
+            out.flush();
+
+            logger.debug("S -> C: {}", response.serialize().trim());
 
         } catch (IOException e) {
 
             logger.error("Failed to remove directory {}: {}", target, e.getMessage());
 
-            throw new FileSystemException("Remove directory operation failed.", 550);
+            throw new FileSystemException("Remove directory operation failed.");
         }
     }
 }

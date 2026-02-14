@@ -106,7 +106,6 @@ public class CommandExecutor {
 	        logger.error("Protocol Error ({}): {}", e.getResponseCode().getCode(), 
 			e.getMessage());
 	        
-	        // We send the code and message directly to the client
 			sendResponse(out, new FtpResponse(
 				e.getResponseCode(),
 				e.getMessage()

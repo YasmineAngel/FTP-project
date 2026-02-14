@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import ftp.exceptions.AuthException;
 import ftp.exceptions.FTPException;
 import ftp.model.UserSession;
+import ftp.protocol.FtpResponse;
+import ftp.protocol.FtpResponseCode;
 import ftp.utils.PathUtils;
 
 public class PwdCommand implements FTPCommand {
@@ -31,9 +33,15 @@ public class PwdCommand implements FTPCommand {
         }
 
         String virtualPath = session.getCurrentDirectory();
-        String response = "257 \"" + virtualPath + "\" is the current directory.";
 
-        out.println(response);
-        logger.debug("S -> C: {}", response);
+        FtpResponse response = new FtpResponse(
+            FtpResponseCode.PATHNAME_CREATED,
+            "\"" + virtualPath + "\" is the current directory."
+        );
+
+        out.print(response.serialize());
+        out.flush();
+
+        logger.debug("S -> C: {}", response.serialize().trim());
     }
 }
