@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.file.Path;
 
 import ftp.data.TransferManager;
+import ftp.utils.FileLockManager;
 import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
@@ -35,7 +36,7 @@ public class StorCommand implements FTPCommand {
             return;
         }
 
-        // Check if PORT or PASV mode is set
+       
         boolean isPassiveMode = session.getPassiveServer() != null;
         boolean isPortMode = session.hasPortMode();
         
@@ -45,21 +46,18 @@ public class StorCommand implements FTPCommand {
             return;
         }
 
-        // Resolve file path
+        FileLockManager lockManager = FileLockManager.getInstance();
         Path filePath = pathUtils.resolve(session.getCurrentDirectory(), args);
 
-        // Validate path is within root (security)
         if (filePath == null || !pathUtils.isWithinRoot(filePath)) {
             out.print("550 Invalid path.\r\n");
             out.flush();
             return;
         }
 
-        // Get restart marker
         long restartMarker = session.getRestartMarker();
-        session.clearRestartMarker(); // Clear after use
+        session.clearRestartMarker(); 
 
-        // Accept or connect data connection
         String mode = session.getTransferType() == UserSession.TransferType.ASCII 
             ? "ASCII" : "BINARY";
         String restartMsg = restartMarker > 0 ? " (restarting at " + restartMarker + ")" : "";
@@ -69,10 +67,8 @@ public class StorCommand implements FTPCommand {
         Socket dataSocket = null;
         try {
             if (isPassiveMode) {
-                // PASV mode: accept connection from client
                 dataSocket = session.getPassiveServer().getServerSocket().accept();
             } else {
-                // PORT mode: connect to client
                 dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
             }
             session.setActiveDataSocket(dataSocket);

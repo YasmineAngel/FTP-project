@@ -16,6 +16,7 @@ import java.util.List;
 
 import ftp.exceptions.ConnectionException;
 import ftp.exceptions.UnavailableFileException;
+import ftp.utils.PathUtils;
 
 public class ListManagerTest {
 
@@ -378,5 +379,96 @@ public class ListManagerTest {
             }
         }
         return -1;
+    }
+
+    /** Date in listing must match MMM dd HH:mm (e.g. Feb 14 12:30). */
+    private static final java.util.regex.Pattern LIST_DATE_PATTERN =
+            java.util.regex.Pattern.compile("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s+\\d{1,2}\\s+\\d{1,2}:\\d{2}");
+
+    @Test
+    void testSendDirectoryListingContainsValidModificationDate() throws Exception {
+        ServerSocket serverSocket = new ServerSocket(0);
+        int port = serverSocket.getLocalPort();
+        List<String> receivedLines = new ArrayList<>();
+        Thread serverThread = new Thread(() -> {
+            try {
+                Socket clientSocket = serverSocket.accept();
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(clientSocket.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        receivedLines.add(line);
+                    }
+                }
+                clientSocket.close();
+            } catch (Exception e) {
+                fail("Server thread error: " + e.getMessage());
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+        Thread.sleep(100);
+
+        try (Socket dataSocket = new Socket("localhost", port)) {
+            ListManager.sendDirectoryListing(testDir, dataSocket);
+            Thread.sleep(100);
+        } finally {
+            serverSocket.close();
+        }
+
+        assertFalse(receivedLines.isEmpty());
+        for (String line : receivedLines) {
+            assertTrue(LIST_DATE_PATTERN.matcher(line).find(),
+                    "Line should contain modification date (MMM dd HH:mm): " + line);
+        }
+    }
+
+    @Test
+    void testSendDirectoryListingWithPathUtilsValidDirectory() throws Exception {
+        PathUtils pathUtils = new PathUtils(tempDir.toString());
+        ServerSocket serverSocket = new ServerSocket(0);
+        int port = serverSocket.getLocalPort();
+        List<String> receivedLines = new ArrayList<>();
+        Thread serverThread = new Thread(() -> {
+            try {
+                Socket clientSocket = serverSocket.accept();
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(clientSocket.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        receivedLines.add(line);
+                    }
+                }
+                clientSocket.close();
+            } catch (Exception e) {
+                fail("Server thread error: " + e.getMessage());
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+        Thread.sleep(100);
+
+        try (Socket dataSocket = new Socket("localhost", port)) {
+            ListManager.sendDirectoryListing(testDir, dataSocket, pathUtils);
+            Thread.sleep(100);
+        } finally {
+            serverSocket.close();
+        }
+        assertFalse(receivedLines.isEmpty());
+    }
+
+    @Test
+    void testSendDirectoryListingWithPathUtilsRejectsInvalidDirectory() throws Exception {
+        PathUtils pathUtils = new PathUtils(tempDir.toString());
+        Path outsideRoot = tempDir.getParent().resolve("outside");
+        ServerSocket serverSocket = new ServerSocket(0);
+        try (Socket dataSocket = new Socket("localhost", serverSocket.getLocalPort())) {
+            // Path outside root or non-existent: PathUtils.isExistingDirectory is false
+            assertThrows(UnavailableFileException.class, () -> {
+                ListManager.sendDirectoryListing(outsideRoot, dataSocket, pathUtils);
+            });
+        } finally {
+            serverSocket.close();
+        }
     }
 }

@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.file.Path;
 
 import ftp.data.TransferManager;
+import ftp.utils.FileLockManager;
 import ftp.exceptions.ConnectionException;
 import ftp.model.UserSession;
 import ftp.utils.PathUtils;
@@ -32,6 +33,7 @@ public class RetrCommand implements FTPCommand {
             return;
         }
 
+        FileLockManager lockManager = FileLockManager.getInstance();
         boolean isPassiveMode = session.getPassiveServer() != null;
         boolean isPortMode = session.hasPortMode();
         
@@ -43,15 +45,20 @@ public class RetrCommand implements FTPCommand {
 
         Path filePath = pathUtils.resolve(session.getCurrentDirectory(), args);
 
+       
         if (filePath == null || !pathUtils.exists(filePath) || !pathUtils.isFile(filePath)) {
             out.print("550 File not found.\r\n");
             out.flush();
             return;
         }
 
-        long restartMarker = session.getRestartMarker();
-        session.clearRestartMarker(); // Clear after use
 
+        lockManager.acquireWriteLock(filePath);
+
+        long restartMarker = session.getRestartMarker();
+        session.clearRestartMarker(); 
+
+        
         String mode = session.getTransferType() == UserSession.TransferType.ASCII 
             ? "ASCII" : "BINARY";
         String restartMsg = restartMarker > 0 ? " (restarting at " + restartMarker + ")" : "";
@@ -81,11 +88,15 @@ public class RetrCommand implements FTPCommand {
             throw new ConnectionException("Download interrupted: " + e.getMessage());
             
         } finally {
+
         	try {
                 if (dataSocket != null) dataSocket.close();
                 session.setActiveDataSocket(null);
                 session.clearPassiveServer();
                 session.clearPortMode();
+
+                lockManager.releaseWriteLock(filePath);
+
             } catch (IOException | ConnectionException e) {
                 throw new ConnectionException(e.getMessage());
             }

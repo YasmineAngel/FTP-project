@@ -29,29 +29,29 @@ public class DeleCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: DELE {}", args);
+        logger.debug("C -> S: DELE {}", args);
 
         FileLockManager lockManager = FileLockManager.getInstance();
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.error("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
         if (args == null || args.isBlank()) {
-            logger.info("S -> C: 501 Syntax error in parameters.");
+            logger.error("S -> C: 501 Syntax error in parameters.");
             throw new SyntaxException("Syntax error in parameters.");
         }
 
         Path target = pathUtils.resolve(session.getCurrentDirectory(), args);
 
         if (target == null || !pathUtils.exists(target)) {
-            logger.info("S -> C: 550 File not found.");
+            logger.error("S -> C: 550 File not found.");
             throw new FileSystemException("File not found.", 550);
         }
 
         if (!pathUtils.isFile(target)) {
-            logger.info("S -> C: 550 Not a regular file.");
+            logger.error("S -> C: 550 Not a regular file.");
             throw new FileSystemException("Not a regular file.", 550);
         }
 
@@ -62,7 +62,7 @@ public class DeleCommand implements FTPCommand {
 
             String response = "250 File deleted successfully.";
             out.println(response);
-            logger.info("S -> C: {}", response);
+            logger.debug("S -> C: {}", response);
 
         } catch (IOException e) {
 

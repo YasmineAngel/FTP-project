@@ -1,8 +1,9 @@
 package ftp.commands;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,9 +29,9 @@ class DeleCommandTest {
     @BeforeEach
     void setUp() {
         session = new UserSession();
-        pathUtils = new PathUtils(System.getProperty("java.io.tmpdir")); // temporary folder
-        command = new DeleCommand(pathUtils); // your actual constructor
-
+        pathUtils = new PathUtils(System.getProperty("java.io.tmpdir"));
+        command = new DeleCommand(pathUtils);
+        session.setCurrentDirectory("/");
         stringWriter = new StringWriter();
         out = new PrintWriter(stringWriter);
     }
@@ -47,13 +48,13 @@ class DeleCommandTest {
     @Test
     void shouldDeleteFileSuccessfully() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path tempFile = Files.createTempFile(root, "deleTest", ".txt");
+        tempFile.toFile().deleteOnExit();
+        command.execute(tempFile.getFileName().toString(), session, out);
+        
 
-        File tempFile = File.createTempFile("test", ".txt");
-        tempFile.deleteOnExit();
-
-        command.execute(tempFile.getAbsolutePath(), session, out);
-
-        assertFalse(tempFile.exists(), "File should be deleted");
+        assertFalse(Files.exists(tempFile), "File should be deleted");
         out.flush();
         String response = stringWriter.toString();
         assertTrue(response.contains("250 File deleted successfully."));
@@ -82,14 +83,13 @@ class DeleCommandTest {
     @Test
     void shouldThrowFileSystemException_whenTargetIsNotFile() throws Exception {
         session.login("user");
-
-        File tempDir = new File(System.getProperty("java.io.tmpdir"), "testDir");
-        tempDir.mkdir();
-        tempDir.deleteOnExit();
+        Path root = pathUtils.getRootDir();
+        Path tempDir = Files.createTempDirectory(root, "deleDirTest");
+        tempDir.toFile().deleteOnExit();
 
         FileSystemException ex = assertThrows(FileSystemException.class, () ->
-                command.execute(tempDir.getAbsolutePath(), session, out)
+                command.execute(tempDir.getFileName().toString(), session, out)
         );
-        assertEquals("Not a regular file.", ex.getMessage()); // match actual message
+        assertEquals("Not a regular file.", ex.getMessage());
     }
 }

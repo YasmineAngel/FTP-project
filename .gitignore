@@ -1,8 +1,8 @@
-# --- Compiled Java files ---
+# --- Compiled files ---
 *.class
 target/
 
-# --- Eclipse specific files ---
+# --- Eclipse  files ---
 .metadata/
 .settings/
 .project
@@ -15,7 +15,11 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+dependency-reduced-pom.xml
 
 # --- OS specific ---
 .DS_Store
 Thumbs.db
+
+# --- server directory ---
+ftp-root/*

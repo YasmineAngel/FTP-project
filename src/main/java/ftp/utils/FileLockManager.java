@@ -8,7 +8,7 @@ import java.nio.file.Path;
 public class FileLockManager {
     private static final FileLockManager INSTANCE = new FileLockManager();
     private final ConcurrentHashMap<Path, ReadWriteLock> locks = new ConcurrentHashMap<>();
-    private FileLockManager() {} // Private constructor
+    private FileLockManager() {}
 
     public static FileLockManager getInstance() {
         return INSTANCE;

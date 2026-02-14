@@ -2,8 +2,7 @@ package ftp.commands;
 
 import ftp.model.UserSession;
 import ftp.exceptions.FTPException;
-import ftp.exceptions.ConnectionException;
-import java.io.IOException;
+
 import java.io.PrintWriter;
 import java.net.Socket;
 

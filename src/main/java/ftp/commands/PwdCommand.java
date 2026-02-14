@@ -23,10 +23,10 @@ public class PwdCommand implements FTPCommand {
     @Override
     public void execute(String args, UserSession session, PrintWriter out) throws FTPException {
 
-        logger.info("C -> S: PWD");
+        logger.debug("C -> S: PWD");
 
         if (!session.isLoggedIn()) {
-            logger.info("S -> C: 530 Not logged in.");
+            logger.warn("S -> C: 530 Not logged in.");
             throw new AuthException("Not logged in.");
         }
 
@@ -34,6 +34,6 @@ public class PwdCommand implements FTPCommand {
         String response = "257 \"" + virtualPath + "\" is the current directory.";
 
         out.println(response);
-        logger.info("S -> C: {}", response);
+        logger.debug("S -> C: {}", response);
     }
 }
