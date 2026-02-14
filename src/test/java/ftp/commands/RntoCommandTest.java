@@ -33,7 +33,7 @@ class RntoCommandTest {
         session = new UserSession();
         pathUtils = new PathUtils(System.getProperty("java.io.tmpdir"));
         command = new RntoCommand(pathUtils);
-
+        session.setCurrentDirectory("/");
         stringWriter = new StringWriter();
         out = new PrintWriter(stringWriter);
     }
@@ -75,16 +75,15 @@ class RntoCommandTest {
     @Test
     void shouldThrowFileSystemException_whenTargetAlreadyExists() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path tempFile1 = Files.createTempFile(root, "rnto1", ".txt");
+        Path tempFile2 = Files.createTempFile(root, "rnto2", ".txt");
 
-        Path tempFile1 = Files.createTempFile("file1", ".txt");
-        Path tempFile2 = Files.createTempFile("file2", ".txt");
-        tempFile1.toFile().deleteOnExit();
-        tempFile2.toFile().deleteOnExit();
-
-        session.setRenameFrom(tempFile1.toAbsolutePath().toString());
+        Path fromResolved = pathUtils.resolve("/", tempFile1.getFileName().toString());
+        session.setRenameFrom(fromResolved.toAbsolutePath().toString());
 
         FileSystemException ex = assertThrows(FileSystemException.class, () ->
-                command.execute(tempFile2.toAbsolutePath().toString(), session, out)
+                command.execute(tempFile2.getFileName().toString(), session, out)
         );
         assertEquals("Target already exists.", ex.getMessage());
     }
@@ -92,20 +91,19 @@ class RntoCommandTest {
     @Test
     void shouldRenameFileSuccessfully() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path oldFile = Files.createTempFile(root, "rntoOld", ".txt");
+        String newFileName = "rntoNewFile_" + System.nanoTime() + ".txt";
+        Path newFilePath = root.resolve(newFileName);
 
-        Path oldFile = Files.createTempFile("oldFile", ".txt");
-        Path newFile = oldFile.resolveSibling("newFile.txt");
-        oldFile.toFile().deleteOnExit();
-        newFile.toFile().deleteOnExit();
+        Path fromResolved = pathUtils.resolve("/", oldFile.getFileName().toString());
+        session.setRenameFrom(fromResolved.toAbsolutePath().toString());
 
-        session.setRenameFrom(oldFile.toAbsolutePath().toString());
+        command.execute(newFileName, session, out);
 
-        command.execute(newFile.toAbsolutePath().toString(), session, out);
-
-        assertTrue(Files.exists(newFile));
+        assertTrue(Files.exists(newFilePath));
         assertFalse(Files.exists(oldFile));
         assertNull(session.getRenameFrom());
-
         out.flush();
         String response = stringWriter.toString();
         assertTrue(response.contains("250 Rename successful."));
@@ -114,20 +112,19 @@ class RntoCommandTest {
     @Test
     void shouldRenameDirectorySuccessfully() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path oldDir = Files.createTempDirectory(root, "rntoOldDir");
+        String newDirName = "rntoNewDir_" + System.nanoTime();
+        Path newDirPath = root.resolve(newDirName);
 
-        Path oldDir = Files.createTempDirectory("oldDir");
-        Path newDir = oldDir.resolveSibling("newDir");
-        oldDir.toFile().deleteOnExit();
-        newDir.toFile().deleteOnExit();
+        Path fromResolved = pathUtils.resolve("/", oldDir.getFileName().toString());
+        session.setRenameFrom(fromResolved.toAbsolutePath().toString());
 
-        session.setRenameFrom(oldDir.toAbsolutePath().toString());
+        command.execute(newDirName, session, out);
 
-        command.execute(newDir.toAbsolutePath().toString(), session, out);
-
-        assertTrue(Files.exists(newDir));
+        assertTrue(Files.exists(newDirPath));
         assertFalse(Files.exists(oldDir));
         assertNull(session.getRenameFrom());
-
         out.flush();
         String response = stringWriter.toString();
         assertTrue(response.contains("250 Rename successful."));

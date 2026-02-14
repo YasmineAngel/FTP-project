@@ -30,7 +30,7 @@ class RnfrCommandTest {
         session = new UserSession();
         pathUtils = new PathUtils(System.getProperty("java.io.tmpdir"));
         command = new RnfrCommand(pathUtils);
-
+        session.setCurrentDirectory("/");
         stringWriter = new StringWriter();
         out = new PrintWriter(stringWriter);
     }
@@ -71,14 +71,14 @@ class RnfrCommandTest {
     @Test
     void shouldSetRenameFrom_whenTargetExists() throws Exception {
         session.login("user");
-
-        // Create a temp file
-        Path tempFile = Files.createTempFile("testFile", ".txt");
+        Path root = pathUtils.getRootDir();
+        Path tempFile = Files.createTempFile(root, "rnfrFile", ".txt");
         tempFile.toFile().deleteOnExit();
+        command.execute(tempFile.getFileName().toString(), session, out);
 
-        command.execute(tempFile.toAbsolutePath().toString(), session, out);
 
-        assertEquals(tempFile.toAbsolutePath().toString(), session.getRenameFrom());
+        Path expectedResolved = pathUtils.resolve("/", tempFile.getFileName().toString());
+        assertEquals(expectedResolved.toAbsolutePath().toString(), session.getRenameFrom());
 
         out.flush();
         String response = stringWriter.toString();
@@ -88,13 +88,13 @@ class RnfrCommandTest {
     @Test
     void shouldWorkForDirectory() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path tempDir = Files.createTempDirectory(root, "rnfrDir");
 
-        Path tempDir = Files.createTempDirectory("testDir");
-        tempDir.toFile().deleteOnExit();
+        command.execute(tempDir.getFileName().toString(), session, out);
 
-        command.execute(tempDir.toAbsolutePath().toString(), session, out);
-
-        assertEquals(tempDir.toAbsolutePath().toString(), session.getRenameFrom());
+        Path expectedResolved = pathUtils.resolve("/", tempDir.getFileName().toString());
+        assertEquals(expectedResolved.toAbsolutePath().toString(), session.getRenameFrom());
 
         out.flush();
         String response = stringWriter.toString();

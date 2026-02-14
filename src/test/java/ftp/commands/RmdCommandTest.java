@@ -29,9 +29,9 @@ class RmdCommandTest {
     @BeforeEach
     void setUp() {
         session = new UserSession();
-        pathUtils = new PathUtils(System.getProperty("java.io.tmpdir")); // temp folder as root
+        pathUtils = new PathUtils(System.getProperty("java.io.tmpdir"));
         command = new RmdCommand(pathUtils);
-
+        session.setCurrentDirectory("/");
         stringWriter = new StringWriter();
         out = new PrintWriter(stringWriter);
     }
@@ -72,13 +72,12 @@ class RmdCommandTest {
     @Test
     void shouldThrowFileSystemException_whenTargetIsNotDirectory() throws Exception {
         session.login("user");
-
-        // Create a temp file
-        Path tempFile = Files.createTempFile("testFile", ".txt");
+        Path root = pathUtils.getRootDir();
+        Path tempFile = Files.createTempFile(root, "rmdFile", ".txt");
         tempFile.toFile().deleteOnExit();
 
         FileSystemException ex = assertThrows(FileSystemException.class, () ->
-                command.execute(tempFile.toAbsolutePath().toString(), session, out)
+                command.execute(tempFile.getFileName().toString(), session, out)
         );
         assertEquals("Not a directory.", ex.getMessage());
     }
@@ -86,15 +85,12 @@ class RmdCommandTest {
     @Test
     void shouldRemoveEmptyDirectorySuccessfully() throws Exception {
         session.login("user");
+        Path root = pathUtils.getRootDir();
+        Path tempDir = Files.createTempDirectory(root, "rmdDir");
 
-        // Create a temporary directory
-        Path tempDir = Files.createTempDirectory("testDir");
-        tempDir.toFile().deleteOnExit();
-
-        command.execute(tempDir.toAbsolutePath().toString(), session, out);
+        command.execute(tempDir.getFileName().toString(), session, out);
 
         assertFalse(Files.exists(tempDir));
-
         out.flush();
         String response = stringWriter.toString();
         assertTrue(response.contains("250 Directory removed successfully."));
@@ -103,14 +99,12 @@ class RmdCommandTest {
     @Test
     void shouldThrowFileSystemException_whenDirectoryNotEmpty() throws Exception {
         session.login("user");
-
-        Path tempDir = Files.createTempDirectory("testDir");
-        Path tempFile = Files.createTempFile(tempDir, "inner", ".txt");
-        tempDir.toFile().deleteOnExit();
-        tempFile.toFile().deleteOnExit();
+        Path root = pathUtils.getRootDir();
+        Path tempDir = Files.createTempDirectory(root, "rmdNonEmpty");
+        Files.createTempFile(tempDir, "inner", ".txt");
 
         FileSystemException ex = assertThrows(FileSystemException.class, () ->
-                command.execute(tempDir.toAbsolutePath().toString(), session, out)
+                command.execute(tempDir.getFileName().toString(), session, out)
         );
         assertEquals("Remove directory operation failed.", ex.getMessage());
     }
