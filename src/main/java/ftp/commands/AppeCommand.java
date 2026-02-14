@@ -50,7 +50,7 @@ public class AppeCommand implements FTPCommand {
 		String mode = session.getTransferType() == UserSession.TransferType.ASCII ? "ASCII" : "BINARY";
 		out.print("150 Opening " + mode + " mode data connection for " + args + " (append).\r\n");
 		out.flush();
-
+		boolean socketOpened = false;
 		Socket dataSocket = null;
 		try {
 			if (isPassiveMode) {
@@ -58,14 +58,14 @@ public class AppeCommand implements FTPCommand {
 			} else {
 				dataSocket = new Socket(session.getPortModeAddress(), session.getPortMode());
 			}
-
+			socketOpened = true;
 			session.setActiveDataSocket(dataSocket);
 
 			TransferManager.receiveFile(filePath, dataSocket, session.getRestartMarker(), true);
 			sendResponse(out, new FtpResponse(FtpResponseCode.FILE_ACTION_OK, "Transfer complete."));
 
 		} catch (IOException e) {
-			if (session.getActiveDataSocket() == null) {
+			if (socketOpened && session.getActiveDataSocket() == null) {
 				sendResponse(out, new FtpResponse(FtpResponseCode.CONNECTION_CLOSED));
 			} else {
 				sendResponse(out,
