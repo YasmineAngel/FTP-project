@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import ftp.commands.AborCommand;
+import ftp.commands.AppeCommand;
 import ftp.commands.CdupCommand;
 import ftp.commands.CwdCommand;
 import ftp.commands.FTPCommand;
@@ -63,6 +64,8 @@ public class CommandExecutor {
         commands.put("PORT", new PortCommand());
         commands.put("REST", new RestCommand());
         commands.put("DELE", new DeleCommand(pathUtils));
+        commands.put("APPE", new AppeCommand(pathUtils));
+
 
         
 

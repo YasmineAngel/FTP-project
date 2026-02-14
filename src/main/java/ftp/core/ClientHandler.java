@@ -23,21 +23,19 @@ public class ClientHandler implements Runnable {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
-            // PROTOCOL RULE: The server must speak first with a 220 code
-            // We use \r\n as required by FTP RFC standards
             out.print("220 Welcome to our Team FTP Server\r\n");
-            out.flush(); // Ensure the message is sent immediately
+            out.flush(); 
             UserSession session = new UserSession();
-
+            logger.info("Session started for client: {}", socket.getRemoteSocketAddress());
              while (session.isConnected()) {
                 String line = in.readLine();
                 if (line == null) break;
-                logger.info("C -> S: {}", line);
+                logger.debug("C -> S: {}", line);
                 commandExecutor.execute(line, session, out);
              }
 
         } catch (IOException e) {
-        	logger.error("Client Disconnected",e);
+        	logger.warn("Client Disconnected",e);
         }finally {
             logger.info("Client session ended.");
         }

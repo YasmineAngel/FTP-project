@@ -26,15 +26,21 @@ public class TransferManager {
     }
 
     public static void receiveFile(Path filePath, Socket dataSocket, long restartMarker) throws StorageException, ConnectionException {
-        logger.info("Receiving file: {} (restart marker: {})", filePath, restartMarker);
+    	receiveFile(filePath, dataSocket, restartMarker, false);
+    }
+    
+    public static void receiveFile(Path filePath, Socket dataSocket, long restartMarker, boolean forcedAppend) 
+            throws StorageException, ConnectionException {
         
-        // Check if parent directory exists and is writable
+        logger.info("Receiving file: {} (restart marker: {}, forcedAppend: {})", filePath, restartMarker, forcedAppend);
+        
         Path parentDir = filePath.getParent();
         if (parentDir != null && !Files.exists(parentDir)) {
             throw new StorageException("Parent directory does not exist");
         }
         
-        boolean append = restartMarker > 0 && Files.exists(filePath);
+        // Logic: Append if it's a resume (marker > 0) OR if it's an APPE command (forcedAppend)
+        boolean append = (restartMarker > 0 && Files.exists(filePath)) || forcedAppend;
         
         try (BufferedOutputStream bos = new BufferedOutputStream(
                 new FileOutputStream(filePath.toFile(), append));
@@ -52,7 +58,6 @@ public class TransferManager {
         } catch (FileNotFoundException e) {
             throw new StorageException("Cannot create file: " + e.getMessage());
         } catch (IOException e) {
-            // Check if it's a socket error (connection) or file write error (storage)
             if (e.getMessage() != null && (e.getMessage().contains("Connection") || e.getMessage().contains("Socket"))) {
                 throw new ConnectionException("Data connection error: " + e.getMessage());
             } else {
