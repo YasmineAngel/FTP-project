@@ -9,35 +9,34 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FTPServer {
-    private final int port;
-    private static final Logger logger =LogManager.getLogger(FTPServer.class);
+	private final int port;
+	private static final Logger logger = LogManager.getLogger(FTPServer.class);
 
-    private final String rootPath;
-    // Handles multiple clients concurrently
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
+	private final String rootPath;
+	// Handles multiple clients concurrently
+	private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
-    public FTPServer(int port, String rootPath) {
-        this.port = port;
-        this.rootPath = rootPath;
-    }
+	public FTPServer(int port, String rootPath) {
+		this.port = port;
+		this.rootPath = rootPath;
+	}
 
-    public void start() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            logger.info("FTP Server is running on port {}", port);
+	public void start() {
+		try (ServerSocket serverSocket = new ServerSocket(port)) {
+			logger.info("FTP Server is running on port {}", port);
 
-            while (true) {
-                
-                Socket clientSocket = serverSocket.accept();
-                logger.info("Client connected from {}", clientSocket.getRemoteSocketAddress());
+			while (true) {
 
-                
-                threadPool.execute(new ClientHandler(clientSocket, rootPath));
-            }
-        } catch (IOException e) {
-        	logger.error("Could not start server",e);
+				Socket clientSocket = serverSocket.accept();
+				logger.info("Client connected from {}", clientSocket.getRemoteSocketAddress());
 
-        } finally {
-            threadPool.shutdown(); 
-        }
-    }
+				threadPool.execute(new ClientHandler(clientSocket, rootPath));
+			}
+		} catch (IOException e) {
+			logger.error("Could not start server", e);
+
+		} finally {
+			threadPool.shutdown();
+		}
+	}
 }
