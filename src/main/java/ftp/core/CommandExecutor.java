@@ -21,6 +21,7 @@ import ftp.commands.PassCommand;
 import ftp.commands.PasvCommand;
 import ftp.commands.PortCommand;
 import ftp.commands.PwdCommand;
+import ftp.commands.QuitCommand;
 import ftp.commands.ReinCommand;
 import ftp.commands.RestCommand;
 import ftp.commands.RetrCommand;
@@ -67,6 +68,8 @@ public class CommandExecutor {
 		commands.put("REST", new RestCommand());
 		commands.put("DELE", new DeleCommand(pathUtils));
 		commands.put("APPE", new AppeCommand(pathUtils));
+		commands.put("QUIT", new QuitCommand());
+
 
 	}
 
